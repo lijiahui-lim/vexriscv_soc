@@ -6,19 +6,23 @@ new handwritten CPU fabric.
 
 ## Layout
 
-- `../VexRiscv/src/main/scala/vexriscv/demo/AlvxGen.scala` — CPU+CLINT+PLIC+APB
-  generator (`AlvxChip`). Regenerate: `sbt "runMain vexriscv.demo.AlvxChipGen"`
-  from the VexRiscv checkout, then copy `AlvxChip.v` into `rtl/`.
+- `gen/` — vendored VexRiscv sources (self-contained; the standalone
+  `../VexRiscv` clone is NOT needed). `gen/src/main/scala/vexriscv/demo/
+  AlvxGen.scala` = CPU+CLINT+PLIC+APB generator (`AlvxChip`);
+  `AlvxApb.scala` = APB block incl. video. Regenerate:
+  `cd gen && ./regen.sh` (sbt runMain + copy + cpu_dbg probe patch).
 - `rtl/` — handwritten fabric + generated chip:
   - `AlvxChip.v` (generated: cpu 4KB/1-way i+d cache, MMU, CLINT, PLIC,
-    APB block = Apb3UartCtrl/Apb3SpiMasterCtrl/Apb3Gpio×4/sysid, JTAG)
-  - `soc.v` fabric: avl_demux×2 (iBus/dBus) + avl_mux (DDR) + fb_reader
+    APB block = Apb3UartCtrl/Apb3SpiMasterCtrl/Apb3Gpio×4/sysid/
+    **video = VideoDma+VgaCtrl+TmdsEncoder×3**, JTAG)
+  - `soc.v` fabric: avl_demux×2 (iBus/dBus) + avl_mux (DDR, 3 masters:
+    iBus/dBus/vidMemAvalon)
   - `avl_cdc` fab→afi async bridge, `avl2axil` (CLINT/PLIC), `avl2apb`
-  - `boot_ram` (1W2R M10K, $readmemh init), `ddr_avl_bridge`, `fb_reader`
-    (last two = proven copies from nios2_soc ip/)
+  - `boot_ram` (1W2R M10K, $readmemh init), `ddr_avl_bridge`
 - `sw/` — bare-metal tests: `test1` (smoke: UART/sysid/DDR r+w/BE/CLINT),
-  `test2` (Sv32: satp, S-mode, VA alias, page fault, timer irq).
-  `make sim` / `make sim2` build + run under Verilator.
+  `test2` (Sv32: satp, S-mode, VA alias, page fault, timer irq),
+  `test3` (SD SPI init+MBR + video fb color bars; `test3s` =
+  FB_ROWS=16 for sim). `make sim`/`sim2`/`sim3` under Verilator.
 - `sim/` — `sim_top.v` (soc→cdc→avlbr→sim_emif), `sim_emif.v` (192-bit UniPHY
   model), `sim_main.cpp` (clock gen + UART decode at 1152 ticks/bit, writes
   `uart.log`; `SIM_STOP=DONE` halts on string, `UART_HEX=1` dumps bytes).
@@ -35,8 +39,18 @@ new handwritten CPU fabric.
 | 0x4000_0000-0x7fff_ffff  | DDR window -> avlbr (i+d+fb)  |
 | 0xf000_0000-0xf000_ffff  | CLINT (axil)                  |
 | 0xf100_0000-0xf10f_ffff  | APB periph (uart@+0x4000 ...) |
-| 0xf200_0000-0xf200_0fff  | fb_reader csr                 |
+| 0xf100_7000            | video regs (generated)        |
 | 0xfc00_0000-0xfc3f_ffff  | PLIC (axil)                   |
+
+Video path (all generated in AlvxApb, fab↔pix CDC inside VideoDma's
+StreamFifoCC): APB `0x7000` regs — `+0` fb base in **32B units**,
+`+4` burst count **−1**, `+8` bit0 enable (rising edge kicks first
+frame, then re-armed at every vsync), `+0C` status `{busy<<1, underRun}`
+(W1C clear). `vidMemAvalon` = 30-bit window-relative byte-addressed
+read-only master (8-word bursts) → DDR arbiter slot 2. `tmds0/1/2` =
+10-bit codes on `pix_clk` (b+g+r); `vid_status[3:0]` = {busy, underRun,
+enable} exported for the JTAG mailbox. Board side only needs the
+`serializer_10_to_1`+`ddio_out` primitives + `vidpll` (75/375/125 MHz).
 
 ## Simulation (local, /opt/oss-cad-suite Verilator 5.049)
 
@@ -98,7 +112,8 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
 - Mailbox (dbg_ram, read via jtagm2/System Console): w0={D3B8,flags}, w1=hb,
   w2..7=avlbr_dbg, w8=fab_hb, w9=ibus{rdv,acc}, w10=dbus{rdv,acc},
   w11=last dBus addr, w12=cpu_dbg (haltIt/fHalt/booted/pc[15:0]...),
-  w13={cpu_rst_req,fab_rst_n,afi_rst_n,pll,glb_rst_n}, w31=0xC0DE0005.
+  w13={cpu_rst_req,fab_rst_n,afi_rst_n,pll,glb_rst_n}, w14=vid_status,
+  w31=0xC0DE0005.
   `open_service master $p` first; use the `phy_2` path only — `phy_1`
   reaches avlbr.s0 and every probe read adds DDR traffic.
 - jtagm/jtagm2 master_read_32 addresses are BYTE offsets into the target
