@@ -88,7 +88,9 @@ wire        cpu_dbus_rdv;
 wire [31:0] cpu_dbus_rdata;
 
 wire        irq_uart, irq_spi, irq_key;
-wire [31:0] plic_src = {29'd0, irq_key, irq_spi, irq_uart};
+// AlvxChip maps plicInterrupts[i] to PLIC source ID i (io_sources = plic>>1),
+// so the bit index IS the interrupt ID. Bit0 is reserved: uart=ID1, spi=ID2, key=ID3.
+wire [31:0] plic_src = {28'd0, irq_key, irq_spi, irq_uart, 1'b0};
 
 // video dma master (window-relative byte addr, active-low waitRequestn)
 wire        vid_rd;

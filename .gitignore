@@ -9,3 +9,10 @@ quartus/
 ip/
 doc/
 *.bak
+
+# linux build artifacts
+linux/src/
+linux/out/
+linux/toolchain-rv32ima/
+linux/kbuild.log
+linux/rootfs/

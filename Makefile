@@ -39,6 +39,13 @@ sw/boot3s.hex: sw/test3s.elf
 	$(OBJCOPY) -O binary $< sw/test3s.bin
 	python3 sw/bin2hex.py sw/test3s.bin $@
 
+sw/boot_linux.elf: sw/crt0.S sw/boot_linux.c sw/link.ld
+	$(CC) $(CFLAGS) -march=rv32ima_zicsr_zifencei -T sw/link.ld sw/crt0.S sw/boot_linux.c -o $@
+
+sw/bootl.hex: sw/boot_linux.elf
+	$(OBJCOPY) -O binary $< sw/boot_linux.bin
+	python3 sw/bin2hex.py sw/boot_linux.bin $@
+
 # ---- verilator sim -------------------------------------------------------
 obj_dir/Vsim_top: sim/sim_top.v sim/sim_main.cpp $(RTL) sim/sim_emif.v
 	$(VERILATOR) --cc --exe --build -O2 -Wno-fatal --trace --top-module sim_top \

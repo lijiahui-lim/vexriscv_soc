@@ -128,7 +128,7 @@ int main(void)
     uart_puts("fb on, status="); uart_hex(sc[1]); uart_putc('\n');
 
     /* -------- SD card init (SPI, mode 0) ---------------------- */
-    REG32(SPI + 0x08) = 0x00;              /* cpol=0 cpha=0, ss active low */
+    REG32(SPI + 0x08) = 0x10;              /* mode0; ss0 pin = !enable (nCS) */
     REG32(SPI + 0x0C) = 155;               /* 125MHz/(2*156) ~ 400 kHz     */
     REG32(SPI + 0x10) = 200;               /* ss_setup  */
     REG32(SPI + 0x14) = 200;               /* ss_hold   */

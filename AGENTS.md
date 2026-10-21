@@ -132,3 +132,46 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
 - On hardware, `master_read_32` on `phy_1` at addr 0 reads DDR byte 0;
   test1's pattern lives at byte 0x10000 (`0xA5A50000^i`), test2's alias
   result at byte 0x200000 (`0xC0FFEE11`/`0x55AA33CC`).
+
+## Linux bring-up (linux/)
+- `linux/build.sh` builds the whole boot blob:
+  busybox (rv32ima musl, `linux/toolchain-rv32ima/` from musl-cross-make)
+  -> initramfs dir -> kernel Image (rv32, `linux/src/linux-6.12.57`,
+  `riscv32-unknown-linux-musl-` gcc — freestanding, no libc multilib needed)
+  -> opensbi 1.7 generic `fw_payload` (XLEN=32, ISA=rv32ima_zicsr_zifencei,
+  FW_TEXT_START=0x40000000, kernel at FW_PAYLOAD_OFFSET=0x400000, dtb embedded)
+  -> `linux/out/fw_payload.bin`.
+- Custom drivers live in `linux/drivers/{tty/serial/alvx_uart.c,
+  spi/spi-alvx.c}` and are injected by `linux/install_drivers.sh`
+  (Kconfig + Makefile). OpenSBI serial driver in `linux/opensbi/`.
+- DTS `linux/dts/alvx.dts`: CLINT f0000000 (timebase 125MHz), PLIC fc000000
+  (ctx0=M, ctx1=S), uart f1004000 irq1, spi f1005000 irq2 + mmc-spi-slot,
+  fb simple-framebuffer @0x58000000 (reserved-memory).
+- Boot flow: `sw/boot_linux.c` in boot_ram — enables video, tries SD
+  (header @LBA1 {magic,size,lba}, payload @LBA64 via `linux/mksdimg.sh`),
+  falls back to JTAG magic word @DDR+0x06000000 (`fpga/load_blob.tcl`
+  uploads fw_payload.bin then writes magic). Jumps to 0x40000000 with
+  a0=hartid(0), a1=0. Magic/scratch MUST sit above the ~38 MiB blob
+  footprint (they are at 0x46000000/0x46000100, below the fb carve
+  0x58000000); writing inside the blob corrupts the kernel image.
+- Hardware PLIC note: `plicInterrupts[i]` IS source ID i (io_sources =
+  plicInterrupts>>1); bit0 must be 0 — soc.v packs {key=3,spi=2,uart=1}.
+- No misaligned access in HW: kernel uses RISCV_EMULATED_UNALIGNED_ACCESS.
+- Kernel MUST be rv32ima with no C extension: riscv defconfig selects
+  EFI which selects RISCV_ISA_C — the fragment disables BOTH
+  (`# CONFIG_EFI is not set`, `# CONFIG_RISCV_ISA_C is not set`);
+  disabling ISA_C alone loses to the EFI select. Verify with
+  `readelf -h vmlinux` -> Flags 0x0 (no RVC).
+- Userspace needs the local toolchain: `linux/toolchain-rv32ima/`
+  (musl-cross-make, --with-arch=rv32ima --disable-multilib). The
+  Xuantie linux-musl gcc only has rv32imac/rv32imafdc multilibs —
+  fine for kernel/opensbi (-nostdlib), unusable for libc apps.
+  musl-cross-make's linux-headers install leaves broken symlinks in
+  the sysroot include (linux/, asm-generic/, mtd/, ...); fix by
+  copying the real dirs from
+  `linux/src/musl-cross-make/linux-headers-4.19.88-2/{generic,riscv32}/include/`.
+  busybox applets needing headers the kit lacks (mtd-user.h, kd.h users):
+  NANDWRITE, NANDDUMP, UBI*, HWCLOCK are disabled in build.sh.
+- SPI chip-select: Apb3SpiMasterCtrl does `pin = ss ^ activeHigh`, so
+  MODE reg (+0x08) bit4 must be 1 for active-low SD nCS. Divisor +0x0C
+  gives f = fab/(2*div): 155 -> ~400 kHz (init), 4 -> 12.5 MHz (data).

@@ -1,0 +1,120 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * ALVX VexRiscv SoC on AL156A (Arria V 5AGXMA3D4F31I3)
+ * RV32IMA + Sv32, CLINT @f0000000, PLIC @fc000000, APB block @f1000000.
+ */
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	compatible = "alvx,al156a";
+	model = "ALVX VexRiscv SoC (AL156A Arria V)";
+
+	aliases { serial0 = &uart0; };
+	chosen {
+		stdout-path = "serial0:115200n8";
+		bootargs = "earlycon=alvx,mmio32,0xf1004000 console=ttyALV0,115200";
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		/* CLINT mtime increments once per fab_clk */
+		timebase-frequency = <125000000>;
+
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "riscv";
+			reg = <0>;
+			riscv,isa = "rv32ima";
+			mmu-type = "riscv,sv32";
+			cpu_intc: interrupt-controller {
+				#interrupt-cells = <1>;
+				interrupt-controller;
+				compatible = "riscv,cpu-intc";
+			};
+		};
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x40000000 0x30000000>;	/* 768 MB DDR3L */
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		/* video framebuffer: kept out of the kernel pool */
+		fb_reserved: framebuffer@58000000 {
+			reg = <0x58000000 0x400000>;	/* 4 MiB carve-out */
+			no-map;
+		};
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		clint0: clint@f0000000 {
+			compatible = "riscv,clint0", "sifive,clint0";
+			reg = <0xf0000000 0x10000>;
+			interrupts-extended = <&cpu_intc 3>, <&cpu_intc 7>;
+		};
+
+		intc0: interrupt-controller@fc000000 {
+			compatible = "riscv,plic0", "sifive,plic-1.0.0";
+			reg = <0xfc000000 0x400000>;
+			interrupt-controller;
+			#interrupt-cells = <1>;
+			/* target0 = M context (MEIP=11), target1 = S context (SEIP=9) */
+			interrupts-extended = <&cpu_intc 11>, <&cpu_intc 9>;
+			riscv,ndev = <31>;
+		};
+
+		uart0: serial@f1004000 {
+			compatible = "alvx,apb3-uart";
+			reg = <0xf1004000 0x1000>;
+			clocks = <&fabclk>;
+			interrupt-parent = <&intc0>;
+			interrupts = <1>;
+		};
+
+		spi0: spi@f1005000 {
+			compatible = "alvx,apb3-spi";
+			reg = <0xf1005000 0x1000>;
+			clocks = <&fabclk>;
+			interrupt-parent = <&intc0>;
+			interrupts = <2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			mmc-slot@0 {
+				compatible = "mmc-spi-slot";
+				reg = <0>;
+				spi-max-frequency = <25000000>;
+				voltage-ranges = <3300 3300>;
+			};
+		};
+	};
+
+	fabclk: clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <125000000>;
+	};
+
+	/* streamed by the on-chip VideoDma; bootloader enables it */
+	framebuffer@58000000 {
+		compatible = "simple-framebuffer";
+		reg = <0x58000000 0x384000>;	/* 1280*720*4 */
+		width = <1280>;
+		height = <720>;
+		stride = <5120>;
+		format = "x8r8g8b8";
+	};
+};
