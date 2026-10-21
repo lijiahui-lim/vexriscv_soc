@@ -5,7 +5,7 @@
 //   0x4000_0000-0x7fff_ffff  DDR window -> ddr_* master port (i+d+fb)
 //   0xf000_0000-0xf000_ffff  CLINT  (axil via avl2axil)
 //   0xf100_0000-0xf10f_ffff  AlvxApb peripheral window (apb via avl2apb)
-//   0xf200_0000-0xf200_0fff  fb_reader csr
+//     apb 0x7000: video regs (fb base/size/enable/status) -> VideoDma+VgaCtrl+Tmds
 //   0xfc00_0000-0xfc3f_ffff  PLIC   (axil via avl2axil)
 //
 // ddr_* port is a window-relative BYTE-addressed Avalon master:
@@ -33,13 +33,13 @@ module soc #(
     input  wire        ddr_readdatavalid,
     input  wire [1:0]  ddr_response,
 
-    // ---- framebuffer reader pixel interface (pix_clk domain) ----
+    // ---- video: pixel clock + generated TMDS codes (pix_clk domain) ----
     input  wire        pix_clk,
-    input  wire        pix_rd,
-    input  wire        pix_vsync,
-    output wire [23:0] pix_rgb,
-    output wire        pix_empty,
-    output wire        pix_underrun,
+    input  wire        pix_reset,          // pix-domain reset (active high)
+    output wire [9:0]  tmds0,              // blue  + hsync/vsync
+    output wire [9:0]  tmds1,              // green
+    output wire [9:0]  tmds2,              // red
+    output wire [3:0]  vid_status,         // {busy, underRun, enable} fab domain
 
     // ---- peripheral pins ----
     output wire        uart_txd,
@@ -89,6 +89,14 @@ wire [31:0] cpu_dbus_rdata;
 
 wire        irq_uart, irq_spi, irq_key;
 wire [31:0] plic_src = {29'd0, irq_key, irq_spi, irq_uart};
+
+// video dma master (window-relative byte addr, active-low waitRequestn)
+wire        vid_rd;
+wire [29:0] vid_addr;
+wire [3:0]  vid_bc;
+wire        vid_wrq;                       // active-high waitrequest
+wire [31:0] vid_rdata;
+wire        vid_rv;
 
 // clint/plic axilite (driven by avl2axil bridges)
 wire [15:0] clint_awaddr;  wire clint_awvalid, clint_awready;
@@ -175,6 +183,17 @@ AlvxChip u_chip (
     .jtag_tdo (jtag_tdo),
     .jtag_tck (jtag_tck),
 
+    .pix_clk   (pix_clk),
+    .pix_reset (pix_reset),
+    .vidMemAvalon_read          (vid_rd),
+    .vidMemAvalon_waitRequestn  (~vid_wrq),
+    .vidMemAvalon_address       (vid_addr),
+    .vidMemAvalon_burstCount    (vid_bc),
+    .vidMemAvalon_readDataValid (vid_rv),
+    .vidMemAvalon_readData      (vid_rdata),
+    .tmds0(tmds0), .tmds1(tmds1), .tmds2(tmds2),
+    .vid_status(vid_status),
+
     .clk        (clk),
     .reset      (reset),
     .debugReset (reset | ~jtag_trst_n),
@@ -220,29 +239,28 @@ assign cpu_ibus_rdv  = i_m_rv;
 assign cpu_ibus_rdata= i_m_rdata;
 
 // ===========================================================================
-// dBus demux: {ram, clint, apb, fb, plic, ddr}
+// dBus demux: {ram, clint, apb, plic, ddr}
 // ===========================================================================
-localparam DS_RAM = 0, DS_CLINT = 1, DS_APB = 2, DS_FB = 3,
-           DS_PLIC = 4, DS_DDR = 5;
+localparam DS_RAM = 0, DS_CLINT = 1, DS_APB = 2, DS_PLIC = 3, DS_DDR = 4;
 
-wire [5:0]   d_s_rd, d_s_rv, d_s_wr;
-wire [191:0] d_s_addr;
-wire [47:0]  d_s_bc;
-wire [191:0] d_s_wdata;
-wire [23:0]  d_s_be;
-wire [5:0]   d_s_wrq;
-wire [191:0] d_s_rdata;
-wire [11:0]  d_s_resp;
+wire [4:0]   d_s_rd, d_s_rv, d_s_wr;
+wire [159:0] d_s_addr;
+wire [39:0]  d_s_bc;
+wire [159:0] d_s_wdata;
+wire [19:0]  d_s_be;
+wire [4:0]   d_s_wrq;
+wire [159:0] d_s_rdata;
+wire [9:0]   d_s_resp;
 wire         d_m_wrq, d_m_rv;
 wire [31:0]  d_m_rdata;
 wire [1:0]   d_m_resp;
 
 avl_demux #(
-    .N(6), .BW(8),
-    .BASE({32'h4000_0000, 32'hFC00_0000, 32'hF200_0000,
-           32'hF100_0000, 32'hF000_0000, 32'h0000_0000}),
-    .MASK({32'hC000_0000, 32'hFFC0_0000, 32'hFFFF_F000,
-           32'hFFF0_0000, 32'hFFFF_0000, 32'hFFFF_8000})
+    .N(5), .BW(8),
+    .BASE({32'h4000_0000, 32'hFC00_0000, 32'hF100_0000,
+           32'hF000_0000, 32'h0000_0000}),
+    .MASK({32'hC000_0000, 32'hFFC0_0000, 32'hFFF0_0000,
+           32'hFFFF_0000, 32'hFFFF_8000})
 ) u_ddemux (
     .clk(clk), .reset_n(reset_n),
     .m_address(cpu_dbus_addr), .m_burstcount({4'd0, cpu_dbus_bc}),
@@ -371,47 +389,16 @@ avl2apb #(.AW(20)) u_apb_b (
 );
 
 // ===========================================================================
-// fb_reader (dBus slot 3 csr; avm -> ddr arbiter)
+// video: DMA master + CSRs live inside AlvxChip (apb 0x7000); only the
+// read master is exposed here and arbitrated into the DDR window.
 // ===========================================================================
-wire        fb_avs_rd  = d_s_rd[DS_FB];
-wire        fb_avs_wr  = d_s_wr[DS_FB];
-reg         fb_avs_rv;
-always @(posedge clk or negedge reset_n)
-    if (!reset_n) fb_avs_rv <= 1'b0;
-    else          fb_avs_rv <= fb_avs_rd;
-
-wire [27:0] fb_avm_addr;
-wire        fb_avm_rd;
-wire [5:0]  fb_avm_bc;
-wire        fb_avm_wrq;
-wire [31:0] fb_avm_rdata;
-wire        fb_avm_rv;
-
-fb_reader u_fb (
-    .clk(clk), .reset_n(reset_n),
-    .avm_address       (fb_avm_addr),
-    .avm_read          (fb_avm_rd),
-    .avm_burstcount    (fb_avm_bc),
-    .avm_waitrequest   (fb_avm_wrq),
-    .avm_readdata      (fb_avm_rdata),
-    .avm_readdatavalid (fb_avm_rv),
-    .avs_address       (d_s_addr[DS_FB*32 + 3 -: 2]),
-    .avs_write         (fb_avs_wr),
-    .avs_writedata     (d_s_wdata[DS_FB*32 +: 32]),
-    .avs_readdata      (d_s_rdata[DS_FB*32 +: 32]),
-    .pix_clk(pix_clk), .pix_rd(pix_rd), .pix_vsync(pix_vsync),
-    .pix_rgb(pix_rgb), .pix_empty(pix_empty), .pix_underrun(pix_underrun)
-);
-assign d_s_wrq[DS_FB] = 1'b0;
-assign d_s_rv[DS_FB]  = fb_avs_rv;
-assign d_s_resp[DS_FB*2 +: 2] = 2'b00;
 
 // ===========================================================================
-// DDR arbiter: {ibus, dbus, fb} -> ddr_* port
+// DDR arbiter: {ibus, dbus, video-dma} -> ddr_* port
 // ===========================================================================
 // master 0 = ibus ddr slot (i_s_* index 1)
 // master 1 = dbus ddr slot (d_s_* index DS_DDR)
-// master 2 = fb avm (word addr -> window-relative byte addr)
+// master 2 = video dma (window-relative byte addr from generated VideoDma)
 wire [31:0] dd_s_addr_full;
 wire [2:0]  dd_wrq, dd_rv;
 wire [95:0] dd_rdat;
@@ -419,13 +406,13 @@ wire [5:0]  dd_rsp;
 
 avl_mux #(.N(3), .AW(32), .DW(32), .BW(8)) u_ddr_mux (
     .clk(clk), .reset_n(reset_n),
-    .m_address    ({ {2'b00, fb_avm_addr, 2'b00},
+    .m_address    ({ {2'b00, vid_addr},
                      d_s_addr[DS_DDR*32 +: 32],
                      i_s_addr[63:32]          }),
-    .m_burstcount ({ {2'b00, fb_avm_bc},
+    .m_burstcount ({ {4'b0000, vid_bc},
                      d_s_bc[DS_DDR*8 +: 8],
                      i_s_bc[15:8]             }),
-    .m_read       ({fb_avm_rd, d_s_rd[DS_DDR], i_s_rd[1]}),
+    .m_read       ({vid_rd, d_s_rd[DS_DDR], i_s_rd[1]}),
     .m_write      ({1'b0, d_s_wr[DS_DDR], i_s_wr[1]}),
     .m_writedata  ({32'd0, d_s_wdata[DS_DDR*32 +: 32], 32'd0}),
     .m_byteenable ({4'hF, d_s_be[DS_DDR*4 +: 4], 4'hF}),
@@ -447,15 +434,15 @@ avl_mux #(.N(3), .AW(32), .DW(32), .BW(8)) u_ddr_mux (
 
 assign i_s_wrq[1]  = dd_wrq[0];
 assign d_s_wrq[DS_DDR] = dd_wrq[1];
-assign fb_avm_wrq  = dd_wrq[2];
+assign vid_wrq    = dd_wrq[2];
 
 assign i_s_rdata[63:32]         = dd_rdat[31:0];
 assign d_s_rdata[DS_DDR*32 +: 32] = dd_rdat[63:32];
-assign fb_avm_rdata             = dd_rdat[95:64];
+assign vid_rdata               = dd_rdat[95:64];
 
 assign i_s_rv[1]     = dd_rv[0];
 assign d_s_rv[DS_DDR] = dd_rv[1];
-assign fb_avm_rv     = dd_rv[2];
+assign vid_rv       = dd_rv[2];
 
 assign i_s_resp[3:2]           = dd_rsp[1:0];
 assign d_s_resp[DS_DDR*2 +: 2] = dd_rsp[3:2];

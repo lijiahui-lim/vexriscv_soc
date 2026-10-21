@@ -183,8 +183,14 @@ wire        soc_ddr_wrq;
 wire [31:0] soc_ddr_rdata;
 wire        soc_ddr_rv;
 
-wire        fbpix_rd, fbpix_vsync, fbpix_empty, fbpix_underrun;
-wire [23:0] fbpix_rgb;
+wire [9:0]  tmds_b, tmds_g, tmds_r;
+wire [3:0]  vid_status;
+
+// pixel-domain reset: por + video pll locked
+wire        vid_rst_n;
+reg  [1:0]  pll_meta = 2'd0;
+always @(posedge px_clk) pll_meta <= {pll_meta[0], pll_locked};
+assign vid_rst_n = por_n & pll_meta[1];
 
 wire [5:0]  led_out;
 wire [31:0] ext1_out, ext2_out;
@@ -207,11 +213,11 @@ soc #(.BOOT_HEX("boot.hex")) u_vex (
     .ddr_response       (2'b00),
 
     .pix_clk            (px_clk),
-    .pix_rd             (fbpix_rd),
-    .pix_vsync          (fbpix_vsync),
-    .pix_rgb            (fbpix_rgb),
-    .pix_empty          (fbpix_empty),
-    .pix_underrun       (fbpix_underrun),
+    .pix_reset          (~vid_rst_n),
+    .tmds0              (tmds_b),
+    .tmds1              (tmds_g),
+    .tmds2              (tmds_r),
+    .vid_status         (vid_status),
 
     .uart_txd           (o_uart_tx),
     .uart_rxd           (i_uart_rx),
@@ -340,41 +346,34 @@ ddr_avl_bridge u_avlbr (
 );
 
 // ---------------------------------------------------------------------------
-// video timing + TMDS out (pixel clock domain)
+// TMDS serializers (x5 clock) -- 10-bit codes generated inside AlvxChip
+// (VgaCtrl timing + TmdsEncoder, pix_clk domain)
 // ---------------------------------------------------------------------------
-wire        vid_rst_n;
-reg  [1:0]  pll_meta = 2'd0;
-always @(posedge px_clk) pll_meta <= {pll_meta[0], pll_locked};
-assign vid_rst_n = por_n & pll_meta[1];
+wire [9:0] tmds_clk_code = 10'b1111100000;
 
-wire        hs, vs, de;
-wire [23:0] vid_rgb;
-
-fb_video u_vid (
-    .pixel_clk  (px_clk),
-    .rst_n      (vid_rst_n),
-    .video_hs   (hs),
-    .video_vs   (vs),
-    .video_de   (de),
-    .video_rgb  (vid_rgb),
-    .pix_rgb    (fbpix_rgb),
-    .pix_empty  (fbpix_empty),
-    .pix_rd     (fbpix_rd),
-    .vsync_out  (fbpix_vsync)
+serializer_10_to_1 ser_b (
+    .serial_clk_5x (x5_clk),
+    .paralell_data (tmds_b),
+    .serial_data_p (o_hdmi_d_p[0]),
+    .serial_data_n (o_hdmi_d_n[0])
 );
-
-dvi_transmitter_top u_dvi (
-    .pclk        (px_clk),
-    .pclk_x5     (x5_clk),
-    .reset_n     (vid_rst_n),
-    .video_din   (vid_rgb),
-    .video_hsync (hs),
-    .video_vsync (vs),
-    .video_de    (de),
-    .tmds_clk_p  (o_hdmi_clk_p),
-    .tmds_clk_n  (o_hdmi_clk_n),
-    .tmds_data_p (o_hdmi_d_p),
-    .tmds_data_n (o_hdmi_d_n)
+serializer_10_to_1 ser_g (
+    .serial_clk_5x (x5_clk),
+    .paralell_data (tmds_g),
+    .serial_data_p (o_hdmi_d_p[1]),
+    .serial_data_n (o_hdmi_d_n[1])
+);
+serializer_10_to_1 ser_r (
+    .serial_clk_5x (x5_clk),
+    .paralell_data (tmds_r),
+    .serial_data_p (o_hdmi_d_p[2]),
+    .serial_data_n (o_hdmi_d_n[2])
+);
+serializer_10_to_1 ser_clk (
+    .serial_clk_5x (x5_clk),
+    .paralell_data (tmds_clk_code),
+    .serial_data_p (o_hdmi_clk_p),
+    .serial_data_n (o_hdmi_clk_n)
 );
 
 // ---------------------------------------------------------------------------
@@ -399,6 +398,13 @@ always @(posedge afi_clk) hb_cnt <= hb_cnt + 27'd1;
 reg [26:0] fab_hb = 27'd0;
 always @(posedge fab_clk) fab_hb <= fab_hb + 27'd1;
 
+// vid_status (fab_clk, quasi-static) -> afi_clk 2-flop sync for mailbox
+reg [3:0] vid_st_sync0 = 4'd0, vid_st_sync1 = 4'd0;
+always @(posedge afi_clk) begin
+    vid_st_sync0 <= vid_status;
+    vid_st_sync1 <= vid_st_sync0;
+end
+
 reg  [7:0]  snap_div = 8'd0;
 wire        do_snap = (snap_div == 8'd0);
 
@@ -411,7 +417,7 @@ end
 always @(*) begin
     case (st_addr)
     8'd0:  st_data = {16'hD3B8, 11'd0, local_cal_fail, local_cal_success,
-                      local_init_done, pll_locked, fbpix_underrun};
+                      local_init_done, pll_locked, vid_st_sync1[1]};
     8'd1:  st_data = hb_cnt;
     8'd2:  st_data = avlbr_dbg[31:0];
     8'd3:  st_data = avlbr_dbg[63:32];
@@ -426,6 +432,7 @@ always @(*) begin
     8'd12: st_data = soc_dbg[127:96];        // live cpu bus levels
     8'd13: st_data = {27'd0, cpu_reset_req, fab_reset_n,
                       afi_reset_n, pll_locked, global_reset_n};
+    8'd14: st_data = {28'd0, vid_st_sync1};    // {busy, underRun, enable}
     8'd31: st_data = 32'hC0DE0005;
     default: st_data = 32'd0;
     endcase

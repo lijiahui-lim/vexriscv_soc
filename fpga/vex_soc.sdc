@@ -24,9 +24,13 @@ set_false_path -to   [get_registers {*fab_rst_meta*}]
 # written many cycles before being read; do not time these paths.
 set_false_path -from [get_registers {*avl_afifo*|mem~*}]
 
-# fb underrun flag: px_clk -> afi_clk status mailbox sample. Quasi-static
-# level flag rewritten on every mailbox snapshot cycle; not a timed path.
-set_false_path -from [get_registers {*u_fb|pix_underrun*}]
+# generated SpinalHDL BufferCC two-flop synchronizers (VideoDma gray
+# pointers pushCC_pushPtrGray/popCC_popPtrGray, frameTgl/errTgl/enPix
+# toggles, debug/reset syncs): cut the path INTO the first sync stage.
+set_false_path -to [get_registers {*buffers_0*}]
+
+# video status nibble: fab_clk -> afi_clk mailbox 2-flop sync, quasi-static.
+set_false_path -to [get_registers {*vid_st_sync0*}]
 
 derive_pll_clocks
 derive_clock_uncertainty

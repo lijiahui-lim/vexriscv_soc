@@ -14,7 +14,9 @@ module sim_top #(
     output wire [5:0] leds,
     input  wire [3:0] keys,
 
-    output wire       pix_vsync_dbg
+    output wire [9:0] tmds0,
+    output wire [9:0] tmds1,
+    output wire [9:0] tmds2
 );
 
 // soc ddr master port (fab domain, window-relative byte addr)
@@ -40,8 +42,9 @@ soc #(.BOOT_HEX(BOOT_HEX)) u_soc (
     .ddr_readdata  (soc_ddr_rdata),
     .ddr_readdatavalid(soc_ddr_rv),
     .ddr_response  (soc_ddr_resp),
-    .pix_clk(1'b0), .pix_rd(1'b0), .pix_vsync(1'b0),
-    .pix_rgb(), .pix_empty(), .pix_underrun(),
+    .pix_clk(clk), .pix_reset(~reset_n),
+    .tmds0(tmds0), .tmds1(tmds1), .tmds2(tmds2),
+    .vid_status(),
     .uart_txd(uart_txd), .uart_rxd(uart_rxd),
     .leds(leds), .keys(keys),
     .ext1(), .ext2(),

@@ -17,10 +17,6 @@ set_global_assignment -name VERILOG_FILE rtl/avl2axil.v
 set_global_assignment -name VERILOG_FILE rtl/avl2apb.v
 set_global_assignment -name VERILOG_FILE rtl/boot_ram.v
 set_global_assignment -name VERILOG_FILE rtl/ddr_avl_bridge.v
-set_global_assignment -name VERILOG_FILE rtl/fb_reader.v
-set_global_assignment -name VERILOG_FILE src/hdmi/fb_video.v
-set_global_assignment -name VERILOG_FILE src/hdmi/dvi_encoder.v
-set_global_assignment -name VERILOG_FILE src/hdmi/dvi_transmitter_top.v
 set_global_assignment -name VERILOG_FILE src/hdmi/serializer_10_to_1.v
 set_global_assignment -name QIP_FILE src/ddio/ddio_out.qip
 set_global_assignment -name QIP_FILE ip/synth/synthesis/emifsys.qip

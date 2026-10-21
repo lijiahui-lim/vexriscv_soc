@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.13.0    git head : d9d72474863badf47d8585d187f3e04ae4749c59
 // Component : AlvxChip
-// Git hash  : baf7dc82f855eddaf5b0a20a6802c526f127e38a
+// Git hash  : ae77bce8069e2ac74b437aabb422ca8af17b037d
 
 `timescale 1ns/1ps
 
@@ -65,6 +65,18 @@ module AlvxChip (
   output wire          irq_uart,
   output wire          irq_spi,
   output wire          irq_key,
+  input  wire          pix_clk,
+  input  wire          pix_reset,
+  output wire          vidMemAvalon_read,
+  input  wire          vidMemAvalon_waitRequestn,
+  output wire [29:0]   vidMemAvalon_address,
+  output wire [3:0]    vidMemAvalon_burstCount,
+  input  wire          vidMemAvalon_readDataValid,
+  input  wire [31:0]   vidMemAvalon_readData,
+  output wire [9:0]    tmds0,
+  output wire [9:0]    tmds1,
+  output wire [9:0]    tmds2,
+  output wire [3:0]    vid_status,
   output wire          debug_resetOut,
   output wire          iBusAvalon_read,
   input  wire          iBusAvalon_waitRequestn,
@@ -190,6 +202,13 @@ module AlvxChip (
   wire                u_apb_io_irq_uart;
   wire                u_apb_io_irq_spi;
   wire                u_apb_io_irq_key;
+  wire                u_apb_io_vid_mem_read;
+  wire       [29:0]   u_apb_io_vid_mem_address;
+  wire       [3:0]    u_apb_io_vid_mem_burstCount;
+  wire       [9:0]    u_apb_io_tmds0;
+  wire       [9:0]    u_apb_io_tmds1;
+  wire       [9:0]    u_apb_io_tmds2;
+  wire       [3:0]    u_apb_io_vid_status;
   wire                IBusCachedPlugin_cache_io_cpu_prefetch_haltIt;
   wire       [31:0]   IBusCachedPlugin_cache_io_cpu_fetch_data;
   wire       [31:0]   IBusCachedPlugin_cache_io_cpu_fetch_physicalAddress;
@@ -2365,29 +2384,41 @@ module AlvxChip (
     .reset                  (reset                               )  //i
   );
   AlvxApb u_apb (
-    .io_apb_PADDR     (apb_PADDR[19:0]          ), //i
-    .io_apb_PSEL      (apb_PSEL                 ), //i
-    .io_apb_PENABLE   (apb_PENABLE              ), //i
-    .io_apb_PREADY    (u_apb_io_apb_PREADY      ), //o
-    .io_apb_PWRITE    (apb_PWRITE               ), //i
-    .io_apb_PWDATA    (apb_PWDATA[31:0]         ), //i
-    .io_apb_PRDATA    (u_apb_io_apb_PRDATA[31:0]), //o
-    .io_apb_PSLVERROR (u_apb_io_apb_PSLVERROR   ), //o
-    .io_uart_txd      (u_apb_io_uart_txd        ), //o
-    .io_uart_rxd      (uart_rxd                 ), //i
-    .io_leds          (u_apb_io_leds[5:0]       ), //o
-    .io_keys          (keys[3:0]                ), //i
-    .io_ext1          (u_apb_io_ext1[31:0]      ), //o
-    .io_ext2          (u_apb_io_ext2[31:0]      ), //o
-    .io_sd_sclk       (u_apb_io_sd_sclk         ), //o
-    .io_sd_mosi       (u_apb_io_sd_mosi         ), //o
-    .io_sd_miso       (sd_miso                  ), //i
-    .io_sd_ncs        (u_apb_io_sd_ncs          ), //o
-    .io_irq_uart      (u_apb_io_irq_uart        ), //o
-    .io_irq_spi       (u_apb_io_irq_spi         ), //o
-    .io_irq_key       (u_apb_io_irq_key         ), //o
-    .clk              (clk                      ), //i
-    .reset            (reset                    )  //i
+    .io_apb_PADDR             (apb_PADDR[19:0]                 ), //i
+    .io_apb_PSEL              (apb_PSEL                        ), //i
+    .io_apb_PENABLE           (apb_PENABLE                     ), //i
+    .io_apb_PREADY            (u_apb_io_apb_PREADY             ), //o
+    .io_apb_PWRITE            (apb_PWRITE                      ), //i
+    .io_apb_PWDATA            (apb_PWDATA[31:0]                ), //i
+    .io_apb_PRDATA            (u_apb_io_apb_PRDATA[31:0]       ), //o
+    .io_apb_PSLVERROR         (u_apb_io_apb_PSLVERROR          ), //o
+    .io_uart_txd              (u_apb_io_uart_txd               ), //o
+    .io_uart_rxd              (uart_rxd                        ), //i
+    .io_leds                  (u_apb_io_leds[5:0]              ), //o
+    .io_keys                  (keys[3:0]                       ), //i
+    .io_ext1                  (u_apb_io_ext1[31:0]             ), //o
+    .io_ext2                  (u_apb_io_ext2[31:0]             ), //o
+    .io_sd_sclk               (u_apb_io_sd_sclk                ), //o
+    .io_sd_mosi               (u_apb_io_sd_mosi                ), //o
+    .io_sd_miso               (sd_miso                         ), //i
+    .io_sd_ncs                (u_apb_io_sd_ncs                 ), //o
+    .io_irq_uart              (u_apb_io_irq_uart               ), //o
+    .io_irq_spi               (u_apb_io_irq_spi                ), //o
+    .io_irq_key               (u_apb_io_irq_key                ), //o
+    .io_pix_clk               (pix_clk                         ), //i
+    .io_pix_reset             (pix_reset                       ), //i
+    .io_vid_mem_read          (u_apb_io_vid_mem_read           ), //o
+    .io_vid_mem_waitRequestn  (vidMemAvalon_waitRequestn       ), //i
+    .io_vid_mem_address       (u_apb_io_vid_mem_address[29:0]  ), //o
+    .io_vid_mem_burstCount    (u_apb_io_vid_mem_burstCount[3:0]), //o
+    .io_vid_mem_readDataValid (vidMemAvalon_readDataValid      ), //i
+    .io_vid_mem_readData      (vidMemAvalon_readData[31:0]     ), //i
+    .io_tmds0                 (u_apb_io_tmds0[9:0]             ), //o
+    .io_tmds1                 (u_apb_io_tmds1[9:0]             ), //o
+    .io_tmds2                 (u_apb_io_tmds2[9:0]             ), //o
+    .io_vid_status            (u_apb_io_vid_status[3:0]        ), //o
+    .clk                      (clk                             ), //i
+    .reset                    (reset                           )  //i
   );
   InstructionCache IBusCachedPlugin_cache (
     .io_flush                              (IBusCachedPlugin_cache_io_flush                           ), //i
@@ -3975,6 +4006,13 @@ module AlvxChip (
   assign irq_uart = u_apb_io_irq_uart;
   assign irq_spi = u_apb_io_irq_spi;
   assign irq_key = u_apb_io_irq_key;
+  assign vidMemAvalon_read = u_apb_io_vid_mem_read;
+  assign vidMemAvalon_address = u_apb_io_vid_mem_address;
+  assign vidMemAvalon_burstCount = u_apb_io_vid_mem_burstCount;
+  assign tmds0 = u_apb_io_tmds0;
+  assign tmds1 = u_apb_io_tmds1;
+  assign tmds2 = u_apb_io_tmds2;
+  assign vid_status = u_apb_io_vid_status;
   always @(*) begin
     IBusCachedPlugin_fetcherHalt = 1'b0;
     if(when_DebugPlugin_l308) begin
@@ -10202,6 +10240,18 @@ module AlvxApb (
   output wire          io_irq_uart,
   output wire          io_irq_spi,
   output wire          io_irq_key,
+  input  wire          io_pix_clk,
+  input  wire          io_pix_reset,
+  output wire          io_vid_mem_read,
+  input  wire          io_vid_mem_waitRequestn,
+  output wire [29:0]   io_vid_mem_address,
+  output wire [3:0]    io_vid_mem_burstCount,
+  input  wire          io_vid_mem_readDataValid,
+  input  wire [31:0]   io_vid_mem_readData,
+  output wire [9:0]    io_tmds0,
+  output wire [9:0]    io_tmds1,
+  output wire [9:0]    io_tmds2,
+  output wire [3:0]    io_vid_status,
   input  wire          clk,
   input  wire          reset
 );
@@ -10216,6 +10266,9 @@ module AlvxApb (
   reg        [31:0]   gpioExt2_io_gpio_read;
   wire       [4:0]    uart_io_apb_PADDR;
   wire       [7:0]    spi_io_apb_PADDR;
+  wire                video_dma_io_mem_cmd_ready;
+  wire                video_pixArea_ctrl_io_softReset;
+  wire       [1:0]    video_pixArea_encB_io_CD;
   wire                gpioLed_io_apb_PREADY;
   wire       [31:0]   gpioLed_io_apb_PRDATA;
   wire                gpioLed_io_apb_PSLVERROR;
@@ -10250,11 +10303,32 @@ module AlvxApb (
   wire                spi_io_spi_mosi;
   wire       [0:0]    spi_io_spi_ss;
   wire                spi_io_interrupt;
+  wire                video_dma_io_busy;
+  wire                video_dma_io_mem_cmd_valid;
+  wire       [24:0]   video_dma_io_mem_cmd_payload;
+  wire                video_dma_io_frame_valid;
+  wire                video_dma_io_frame_payload_last;
+  wire       [31:0]   video_dma_io_frame_payload_fragment;
+  wire                video_enable_buffercc_io_dataOut;
+  wire                video_pixArea_ctrl_io_frameStart;
+  wire                video_pixArea_ctrl_io_pixels_ready;
+  wire                video_pixArea_ctrl_io_vga_vSync;
+  wire                video_pixArea_ctrl_io_vga_hSync;
+  wire                video_pixArea_ctrl_io_vga_colorEn;
+  wire       [7:0]    video_pixArea_ctrl_io_vga_color_r;
+  wire       [7:0]    video_pixArea_ctrl_io_vga_color_g;
+  wire       [7:0]    video_pixArea_ctrl_io_vga_color_b;
+  wire                video_pixArea_ctrl_io_error;
+  wire       [9:0]    video_pixArea_encB_io_TMDS;
+  wire       [9:0]    video_pixArea_encG_io_TMDS;
+  wire       [9:0]    video_pixArea_encR_io_TMDS;
+  wire                video_pixArea_frameTgl_buffercc_io_dataOut;
+  wire                video_pixArea_errTgl_buffercc_io_dataOut;
   wire                io_apb_decoder_io_input_PREADY;
   wire       [31:0]   io_apb_decoder_io_input_PRDATA;
   wire                io_apb_decoder_io_input_PSLVERROR;
   wire       [19:0]   io_apb_decoder_io_output_PADDR;
-  wire       [6:0]    io_apb_decoder_io_output_PSEL;
+  wire       [7:0]    io_apb_decoder_io_output_PSEL;
   wire                io_apb_decoder_io_output_PENABLE;
   wire                io_apb_decoder_io_output_PWRITE;
   wire       [31:0]   io_apb_decoder_io_output_PWDATA;
@@ -10296,9 +10370,16 @@ module AlvxApb (
   wire                apb3Router_1_io_outputs_6_PENABLE;
   wire                apb3Router_1_io_outputs_6_PWRITE;
   wire       [31:0]   apb3Router_1_io_outputs_6_PWDATA;
+  wire       [19:0]   apb3Router_1_io_outputs_7_PADDR;
+  wire       [0:0]    apb3Router_1_io_outputs_7_PSEL;
+  wire                apb3Router_1_io_outputs_7_PENABLE;
+  wire                apb3Router_1_io_outputs_7_PWRITE;
+  wire       [31:0]   apb3Router_1_io_outputs_7_PWDATA;
+  wire       [2:0]    _zz_video_rspBeat_valueNext;
+  wire       [0:0]    _zz_video_rspBeat_valueNext_1;
   reg        [3:0]    keys_d;
   reg                 keyFlag;
-  wire                when_AlvxApb_l106;
+  wire                when_AlvxApb_l130;
   wire       [11:0]   sysid_apb_PADDR;
   wire       [0:0]    sysid_apb_PSEL;
   wire                sysid_apb_PENABLE;
@@ -10313,7 +10394,78 @@ module AlvxApb (
   wire                sysid_factory_askRead;
   wire                sysid_factory_doWrite;
   wire                sysid_factory_doRead;
+  reg                 video_enable;
+  reg        [24:0]   video_base;
+  reg        [17:0]   video_size;
+  reg                 video_underRun;
+  reg                 video_startReq;
+  reg                 video_rspBeat_willIncrement;
+  wire                video_rspBeat_willClear;
+  reg        [2:0]    video_rspBeat_valueNext;
+  reg        [2:0]    video_rspBeat_value;
+  wire                video_rspBeat_willOverflowIfInc;
+  wire                video_rspBeat_willOverflow;
+  wire                video_pixArea_enPix;
+  wire                video_pixArea_rgbFrag_last;
+  wire       [7:0]    video_pixArea_rgbFrag_fragment_r;
+  wire       [7:0]    video_pixArea_rgbFrag_fragment_g;
+  wire       [7:0]    video_pixArea_rgbFrag_fragment_b;
+  wire       [23:0]   _zz_video_pixArea_rgbFrag_fragment_r;
+  wire                video_dma_io_frame_translated_valid;
+  wire                video_dma_io_frame_translated_ready;
+  wire                video_dma_io_frame_translated_payload_last;
+  wire       [7:0]    video_dma_io_frame_translated_payload_fragment_r;
+  wire       [7:0]    video_dma_io_frame_translated_payload_fragment_g;
+  wire       [7:0]    video_dma_io_frame_translated_payload_fragment_b;
+  reg                 _zz_when_VgaCtrl_l334;
+  reg                 _zz_when_VgaCtrl_l334_1;
+  reg                 _zz_when_VgaCtrl_l335;
+  wire                video_dma_io_frame_translated_fire;
+  reg                 video_dma_io_frame_translated_payload_first;
+  wire                when_VgaCtrl_l323;
+  wire                video_dma_io_frame_translated_translated_valid;
+  wire                video_dma_io_frame_translated_translated_ready;
+  wire       [7:0]    video_dma_io_frame_translated_translated_payload_r;
+  wire       [7:0]    video_dma_io_frame_translated_translated_payload_g;
+  wire       [7:0]    video_dma_io_frame_translated_translated_payload_b;
+  wire                _zz_video_dma_io_frame_translated_translated_ready;
+  wire                video_dma_io_frame_translated_translated_haltWhen_valid;
+  wire                video_dma_io_frame_translated_translated_haltWhen_ready;
+  wire       [7:0]    video_dma_io_frame_translated_translated_haltWhen_payload_r;
+  wire       [7:0]    video_dma_io_frame_translated_translated_haltWhen_payload_g;
+  wire       [7:0]    video_dma_io_frame_translated_translated_haltWhen_payload_b;
+  wire                when_VgaCtrl_l330;
+  wire                when_VgaCtrl_l334;
+  wire                when_VgaCtrl_l335;
+  reg                 video_pixArea_frameTgl;
+  reg                 video_pixArea_errTgl;
+  wire                video_frameTglD;
+  reg                 video_frameTglQ;
+  wire                video_errTglD;
+  reg                 video_errTglQ;
+  reg                 video_enQ;
+  wire                when_AlvxApb_l235;
+  wire                when_AlvxApb_l238;
+  wire       [11:0]   video_regs_apb_PADDR;
+  wire       [0:0]    video_regs_apb_PSEL;
+  wire                video_regs_apb_PENABLE;
+  wire                video_regs_apb_PREADY;
+  wire                video_regs_apb_PWRITE;
+  wire       [31:0]   video_regs_apb_PWDATA;
+  reg        [31:0]   video_regs_apb_PRDATA;
+  wire                video_regs_apb_PSLVERROR;
+  wire                video_regs_factory_readErrorFlag;
+  wire                video_regs_factory_writeErrorFlag;
+  wire                video_regs_factory_askWrite;
+  wire                video_regs_factory_askRead;
+  wire                video_regs_factory_doWrite;
+  wire                video_regs_factory_doRead;
+  reg        [24:0]   video_base_driver;
+  reg        [17:0]   video_size_driver;
+  reg                 video_enable_driver;
 
+  assign _zz_video_rspBeat_valueNext_1 = video_rspBeat_willIncrement;
+  assign _zz_video_rspBeat_valueNext = {2'd0, _zz_video_rspBeat_valueNext_1};
   Apb3Gpio gpioLed (
     .io_apb_PADDR        (gpioLed_io_apb_PADDR[3:0]             ), //i
     .io_apb_PSEL         (apb3Router_1_io_outputs_0_PSEL        ), //i
@@ -10408,6 +10560,96 @@ module AlvxApb (
     .clk            (clk                                   ), //i
     .reset          (reset                                 )  //i
   );
+  VideoDma video_dma (
+    .io_start                    (video_startReq                           ), //i
+    .io_busy                     (video_dma_io_busy                        ), //o
+    .io_base                     (video_base[24:0]                         ), //i
+    .io_size                     (video_size[17:0]                         ), //i
+    .io_mem_cmd_valid            (video_dma_io_mem_cmd_valid               ), //o
+    .io_mem_cmd_ready            (video_dma_io_mem_cmd_ready               ), //i
+    .io_mem_cmd_payload          (video_dma_io_mem_cmd_payload[24:0]       ), //o
+    .io_mem_rsp_valid            (io_vid_mem_readDataValid                 ), //i
+    .io_mem_rsp_payload_last     (video_rspBeat_willOverflow               ), //i
+    .io_mem_rsp_payload_fragment (io_vid_mem_readData[31:0]                ), //i
+    .io_frame_valid              (video_dma_io_frame_valid                 ), //o
+    .io_frame_ready              (video_dma_io_frame_translated_ready      ), //i
+    .io_frame_payload_last       (video_dma_io_frame_payload_last          ), //o
+    .io_frame_payload_fragment   (video_dma_io_frame_payload_fragment[31:0]), //o
+    .clk                         (clk                                      ), //i
+    .reset                       (reset                                    ), //i
+    .io_pix_clk                  (io_pix_clk                               ), //i
+    .io_pix_reset                (io_pix_reset                             )  //i
+  );
+  (* keep_hierarchy = "TRUE" *) BufferCC_9 video_enable_buffercc (
+    .io_dataIn    (video_enable                    ), //i
+    .io_dataOut   (video_enable_buffercc_io_dataOut), //o
+    .io_pix_clk   (io_pix_clk                      ), //i
+    .io_pix_reset (io_pix_reset                    )  //i
+  );
+  VgaCtrl video_pixArea_ctrl (
+    .io_softReset            (video_pixArea_ctrl_io_softReset                                 ), //i
+    .io_timings_h_syncStart  (12'h06d                                                         ), //i
+    .io_timings_h_syncEnd    (12'h671                                                         ), //i
+    .io_timings_h_colorStart (12'h149                                                         ), //i
+    .io_timings_h_colorEnd   (12'h649                                                         ), //i
+    .io_timings_h_polarity   (1'b1                                                            ), //i
+    .io_timings_v_syncStart  (12'h004                                                         ), //i
+    .io_timings_v_syncEnd    (12'h2ed                                                         ), //i
+    .io_timings_v_colorStart (12'h018                                                         ), //i
+    .io_timings_v_colorEnd   (12'h2e8                                                         ), //i
+    .io_timings_v_polarity   (1'b1                                                            ), //i
+    .io_frameStart           (video_pixArea_ctrl_io_frameStart                                ), //o
+    .io_pixels_valid         (video_dma_io_frame_translated_translated_haltWhen_valid         ), //i
+    .io_pixels_ready         (video_pixArea_ctrl_io_pixels_ready                              ), //o
+    .io_pixels_payload_r     (video_dma_io_frame_translated_translated_haltWhen_payload_r[7:0]), //i
+    .io_pixels_payload_g     (video_dma_io_frame_translated_translated_haltWhen_payload_g[7:0]), //i
+    .io_pixels_payload_b     (video_dma_io_frame_translated_translated_haltWhen_payload_b[7:0]), //i
+    .io_vga_vSync            (video_pixArea_ctrl_io_vga_vSync                                 ), //o
+    .io_vga_hSync            (video_pixArea_ctrl_io_vga_hSync                                 ), //o
+    .io_vga_colorEn          (video_pixArea_ctrl_io_vga_colorEn                               ), //o
+    .io_vga_color_r          (video_pixArea_ctrl_io_vga_color_r[7:0]                          ), //o
+    .io_vga_color_g          (video_pixArea_ctrl_io_vga_color_g[7:0]                          ), //o
+    .io_vga_color_b          (video_pixArea_ctrl_io_vga_color_b[7:0]                          ), //o
+    .io_error                (video_pixArea_ctrl_io_error                                     ), //o
+    .io_pix_clk              (io_pix_clk                                                      ), //i
+    .io_pix_reset            (io_pix_reset                                                    )  //i
+  );
+  TmdsEncoder video_pixArea_encB (
+    .io_VD        (video_pixArea_ctrl_io_vga_color_b[7:0]), //i
+    .io_CD        (video_pixArea_encB_io_CD[1:0]         ), //i
+    .io_VDE       (video_pixArea_ctrl_io_vga_colorEn     ), //i
+    .io_TMDS      (video_pixArea_encB_io_TMDS[9:0]       ), //o
+    .io_pix_clk   (io_pix_clk                            ), //i
+    .io_pix_reset (io_pix_reset                          )  //i
+  );
+  TmdsEncoder video_pixArea_encG (
+    .io_VD        (video_pixArea_ctrl_io_vga_color_g[7:0]), //i
+    .io_CD        (2'b00                                 ), //i
+    .io_VDE       (video_pixArea_ctrl_io_vga_colorEn     ), //i
+    .io_TMDS      (video_pixArea_encG_io_TMDS[9:0]       ), //o
+    .io_pix_clk   (io_pix_clk                            ), //i
+    .io_pix_reset (io_pix_reset                          )  //i
+  );
+  TmdsEncoder video_pixArea_encR (
+    .io_VD        (video_pixArea_ctrl_io_vga_color_r[7:0]), //i
+    .io_CD        (2'b00                                 ), //i
+    .io_VDE       (video_pixArea_ctrl_io_vga_colorEn     ), //i
+    .io_TMDS      (video_pixArea_encR_io_TMDS[9:0]       ), //o
+    .io_pix_clk   (io_pix_clk                            ), //i
+    .io_pix_reset (io_pix_reset                          )  //i
+  );
+  (* keep_hierarchy = "TRUE" *) BufferCC_10 video_pixArea_frameTgl_buffercc (
+    .io_dataIn  (video_pixArea_frameTgl                    ), //i
+    .io_dataOut (video_pixArea_frameTgl_buffercc_io_dataOut), //o
+    .clk        (clk                                       ), //i
+    .reset      (reset                                     )  //i
+  );
+  (* keep_hierarchy = "TRUE" *) BufferCC_10 video_pixArea_errTgl_buffercc (
+    .io_dataIn  (video_pixArea_errTgl                    ), //i
+    .io_dataOut (video_pixArea_errTgl_buffercc_io_dataOut), //o
+    .clk        (clk                                     ), //i
+    .reset      (reset                                   )  //i
+  );
   Apb3Decoder io_apb_decoder (
     .io_input_PADDR      (io_apb_PADDR[19:0]                   ), //i
     .io_input_PSEL       (io_apb_PSEL                          ), //i
@@ -10418,7 +10660,7 @@ module AlvxApb (
     .io_input_PRDATA     (io_apb_decoder_io_input_PRDATA[31:0] ), //o
     .io_input_PSLVERROR  (io_apb_decoder_io_input_PSLVERROR    ), //o
     .io_output_PADDR     (io_apb_decoder_io_output_PADDR[19:0] ), //o
-    .io_output_PSEL      (io_apb_decoder_io_output_PSEL[6:0]   ), //o
+    .io_output_PSEL      (io_apb_decoder_io_output_PSEL[7:0]   ), //o
     .io_output_PENABLE   (io_apb_decoder_io_output_PENABLE     ), //o
     .io_output_PREADY    (apb3Router_1_io_input_PREADY         ), //i
     .io_output_PWRITE    (io_apb_decoder_io_output_PWRITE      ), //o
@@ -10428,7 +10670,7 @@ module AlvxApb (
   );
   Apb3Router apb3Router_1 (
     .io_input_PADDR         (io_apb_decoder_io_output_PADDR[19:0]  ), //i
-    .io_input_PSEL          (io_apb_decoder_io_output_PSEL[6:0]    ), //i
+    .io_input_PSEL          (io_apb_decoder_io_output_PSEL[7:0]    ), //i
     .io_input_PENABLE       (io_apb_decoder_io_output_PENABLE      ), //i
     .io_input_PREADY        (apb3Router_1_io_input_PREADY          ), //o
     .io_input_PWRITE        (io_apb_decoder_io_output_PWRITE       ), //i
@@ -10491,6 +10733,14 @@ module AlvxApb (
     .io_outputs_6_PWDATA    (apb3Router_1_io_outputs_6_PWDATA[31:0]), //o
     .io_outputs_6_PRDATA    (sysid_apb_PRDATA[31:0]                ), //i
     .io_outputs_6_PSLVERROR (sysid_apb_PSLVERROR                   ), //i
+    .io_outputs_7_PADDR     (apb3Router_1_io_outputs_7_PADDR[19:0] ), //o
+    .io_outputs_7_PSEL      (apb3Router_1_io_outputs_7_PSEL        ), //o
+    .io_outputs_7_PENABLE   (apb3Router_1_io_outputs_7_PENABLE     ), //o
+    .io_outputs_7_PREADY    (video_regs_apb_PREADY                 ), //i
+    .io_outputs_7_PWRITE    (apb3Router_1_io_outputs_7_PWRITE      ), //o
+    .io_outputs_7_PWDATA    (apb3Router_1_io_outputs_7_PWDATA[31:0]), //o
+    .io_outputs_7_PRDATA    (video_regs_apb_PRDATA[31:0]           ), //i
+    .io_outputs_7_PSLVERROR (video_regs_apb_PSLVERROR              ), //i
     .clk                    (clk                                   ), //i
     .reset                  (reset                                 )  //i
   );
@@ -10665,7 +10915,7 @@ module AlvxApb (
   assign io_sd_mosi = spi_io_spi_mosi;
   assign io_sd_ncs = spi_io_spi_ss[0];
   assign io_irq_spi = spi_io_interrupt;
-  assign when_AlvxApb_l106 = (io_keys != keys_d);
+  assign when_AlvxApb_l130 = (io_keys != keys_d);
   assign io_irq_key = keyFlag;
   assign sysid_factory_readErrorFlag = 1'b0;
   assign sysid_factory_writeErrorFlag = 1'b0;
@@ -10695,6 +10945,93 @@ module AlvxApb (
   assign sysid_factory_doWrite = (((sysid_apb_PSEL[0] && sysid_apb_PENABLE) && sysid_apb_PREADY) && sysid_apb_PWRITE);
   assign sysid_factory_doRead = (((sysid_apb_PSEL[0] && sysid_apb_PENABLE) && sysid_apb_PREADY) && (! sysid_apb_PWRITE));
   assign sysid_apb_PSLVERROR = ((sysid_factory_doWrite && sysid_factory_writeErrorFlag) || (sysid_factory_doRead && sysid_factory_readErrorFlag));
+  assign io_vid_mem_read = video_dma_io_mem_cmd_valid;
+  assign io_vid_mem_address = ({5'd0,video_dma_io_mem_cmd_payload} <<< 3'd5);
+  assign io_vid_mem_burstCount = 4'b1000;
+  assign video_dma_io_mem_cmd_ready = (io_vid_mem_read && (! io_vid_mem_waitRequestn));
+  always @(*) begin
+    video_rspBeat_willIncrement = 1'b0;
+    if(io_vid_mem_readDataValid) begin
+      video_rspBeat_willIncrement = 1'b1;
+    end
+  end
+
+  assign video_rspBeat_willClear = 1'b0;
+  assign video_rspBeat_willOverflowIfInc = (video_rspBeat_value == 3'b111);
+  assign video_rspBeat_willOverflow = (video_rspBeat_willOverflowIfInc && video_rspBeat_willIncrement);
+  always @(*) begin
+    video_rspBeat_valueNext = (video_rspBeat_value + _zz_video_rspBeat_valueNext);
+    if(video_rspBeat_willClear) begin
+      video_rspBeat_valueNext = 3'b000;
+    end
+  end
+
+  assign video_pixArea_enPix = video_enable_buffercc_io_dataOut;
+  assign video_pixArea_ctrl_io_softReset = (! video_pixArea_enPix);
+  assign video_pixArea_rgbFrag_last = video_dma_io_frame_payload_last;
+  assign _zz_video_pixArea_rgbFrag_fragment_r = video_dma_io_frame_payload_fragment[23 : 0];
+  assign video_pixArea_rgbFrag_fragment_r = _zz_video_pixArea_rgbFrag_fragment_r[7 : 0];
+  assign video_pixArea_rgbFrag_fragment_g = _zz_video_pixArea_rgbFrag_fragment_r[15 : 8];
+  assign video_pixArea_rgbFrag_fragment_b = _zz_video_pixArea_rgbFrag_fragment_r[23 : 16];
+  assign video_dma_io_frame_translated_valid = video_dma_io_frame_valid;
+  assign video_dma_io_frame_translated_payload_last = video_pixArea_rgbFrag_last;
+  assign video_dma_io_frame_translated_payload_fragment_r = video_pixArea_rgbFrag_fragment_r;
+  assign video_dma_io_frame_translated_payload_fragment_g = video_pixArea_rgbFrag_fragment_g;
+  assign video_dma_io_frame_translated_payload_fragment_b = video_pixArea_rgbFrag_fragment_b;
+  assign video_dma_io_frame_translated_fire = (video_dma_io_frame_translated_valid && video_dma_io_frame_translated_ready);
+  assign when_VgaCtrl_l323 = (video_dma_io_frame_translated_fire && video_dma_io_frame_translated_payload_first);
+  assign video_dma_io_frame_translated_translated_valid = video_dma_io_frame_translated_valid;
+  assign video_dma_io_frame_translated_ready = video_dma_io_frame_translated_translated_ready;
+  assign video_dma_io_frame_translated_translated_payload_r = video_dma_io_frame_translated_payload_fragment_r;
+  assign video_dma_io_frame_translated_translated_payload_g = video_dma_io_frame_translated_payload_fragment_g;
+  assign video_dma_io_frame_translated_translated_payload_b = video_dma_io_frame_translated_payload_fragment_b;
+  assign _zz_video_dma_io_frame_translated_translated_ready = (! (_zz_when_VgaCtrl_l334_1 && (! _zz_when_VgaCtrl_l334)));
+  assign video_dma_io_frame_translated_translated_haltWhen_valid = (video_dma_io_frame_translated_translated_valid && _zz_video_dma_io_frame_translated_translated_ready);
+  assign video_dma_io_frame_translated_translated_ready = (video_dma_io_frame_translated_translated_haltWhen_ready && _zz_video_dma_io_frame_translated_translated_ready);
+  assign video_dma_io_frame_translated_translated_haltWhen_payload_r = video_dma_io_frame_translated_translated_payload_r;
+  assign video_dma_io_frame_translated_translated_haltWhen_payload_g = video_dma_io_frame_translated_translated_payload_g;
+  assign video_dma_io_frame_translated_translated_haltWhen_payload_b = video_dma_io_frame_translated_translated_payload_b;
+  assign video_dma_io_frame_translated_translated_haltWhen_ready = video_pixArea_ctrl_io_pixels_ready;
+  assign when_VgaCtrl_l330 = (video_dma_io_frame_translated_fire && video_dma_io_frame_translated_payload_last);
+  assign when_VgaCtrl_l334 = ((! _zz_when_VgaCtrl_l334_1) && (! _zz_when_VgaCtrl_l334));
+  assign when_VgaCtrl_l335 = ((video_pixArea_ctrl_io_error || 1'b0) || ((_zz_when_VgaCtrl_l335 && video_dma_io_frame_translated_valid) && (! video_dma_io_frame_translated_payload_first)));
+  assign video_pixArea_encB_io_CD = {video_pixArea_ctrl_io_vga_vSync,video_pixArea_ctrl_io_vga_hSync};
+  assign io_tmds0 = video_pixArea_encB_io_TMDS;
+  assign io_tmds1 = video_pixArea_encG_io_TMDS;
+  assign io_tmds2 = video_pixArea_encR_io_TMDS;
+  assign video_frameTglD = video_pixArea_frameTgl_buffercc_io_dataOut;
+  assign video_errTglD = video_pixArea_errTgl_buffercc_io_dataOut;
+  assign when_AlvxApb_l235 = ((video_enable && (! video_enQ)) || ((video_enable && (! video_dma_io_busy)) && (video_frameTglD != video_frameTglQ)));
+  assign when_AlvxApb_l238 = (video_errTglD != video_errTglQ);
+  assign io_vid_status = {{{1'b0,video_dma_io_busy},video_underRun},video_enable};
+  assign video_regs_factory_readErrorFlag = 1'b0;
+  assign video_regs_factory_writeErrorFlag = 1'b0;
+  assign video_regs_apb_PREADY = 1'b1;
+  always @(*) begin
+    video_regs_apb_PRDATA = 32'h0;
+    case(video_regs_apb_PADDR)
+      12'h0 : begin
+        video_regs_apb_PRDATA[24 : 0] = video_base_driver;
+      end
+      12'h004 : begin
+        video_regs_apb_PRDATA[17 : 0] = video_size_driver;
+      end
+      12'h008 : begin
+        video_regs_apb_PRDATA[0 : 0] = video_enable_driver;
+      end
+      12'h00c : begin
+        video_regs_apb_PRDATA[1 : 0] = {video_dma_io_busy,video_underRun};
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  assign video_regs_factory_askWrite = ((video_regs_apb_PSEL[0] && video_regs_apb_PENABLE) && video_regs_apb_PWRITE);
+  assign video_regs_factory_askRead = ((video_regs_apb_PSEL[0] && video_regs_apb_PENABLE) && (! video_regs_apb_PWRITE));
+  assign video_regs_factory_doWrite = (((video_regs_apb_PSEL[0] && video_regs_apb_PENABLE) && video_regs_apb_PREADY) && video_regs_apb_PWRITE);
+  assign video_regs_factory_doRead = (((video_regs_apb_PSEL[0] && video_regs_apb_PENABLE) && video_regs_apb_PREADY) && (! video_regs_apb_PWRITE));
+  assign video_regs_apb_PSLVERROR = ((video_regs_factory_doWrite && video_regs_factory_writeErrorFlag) || (video_regs_factory_doRead && video_regs_factory_readErrorFlag));
   assign io_apb_PREADY = io_apb_decoder_io_input_PREADY;
   assign io_apb_PRDATA = io_apb_decoder_io_input_PRDATA;
   assign io_apb_PSLVERROR = io_apb_decoder_io_input_PSLVERROR;
@@ -10709,15 +11046,37 @@ module AlvxApb (
   assign sysid_apb_PENABLE = apb3Router_1_io_outputs_6_PENABLE;
   assign sysid_apb_PWRITE = apb3Router_1_io_outputs_6_PWRITE;
   assign sysid_apb_PWDATA = apb3Router_1_io_outputs_6_PWDATA;
+  assign video_regs_apb_PADDR = apb3Router_1_io_outputs_7_PADDR[11:0];
+  assign video_regs_apb_PSEL = apb3Router_1_io_outputs_7_PSEL;
+  assign video_regs_apb_PENABLE = apb3Router_1_io_outputs_7_PENABLE;
+  assign video_regs_apb_PWRITE = apb3Router_1_io_outputs_7_PWRITE;
+  assign video_regs_apb_PWDATA = apb3Router_1_io_outputs_7_PWDATA;
   always @(posedge clk or posedge reset) begin
     if(reset) begin
       keys_d <= 4'b1111;
       keyFlag <= 1'b0;
+      video_enable <= 1'b0;
+      video_base <= 25'h0c00000;
+      video_size <= 18'h1c1ff;
+      video_underRun <= 1'b0;
+      video_startReq <= 1'b0;
+      video_rspBeat_value <= 3'b000;
     end else begin
       keys_d <= io_keys;
-      if(when_AlvxApb_l106) begin
+      if(when_AlvxApb_l130) begin
         keyFlag <= 1'b1;
       end
+      video_startReq <= 1'b0;
+      video_rspBeat_value <= video_rspBeat_valueNext;
+      if(when_AlvxApb_l235) begin
+        video_startReq <= 1'b1;
+      end
+      if(when_AlvxApb_l238) begin
+        video_underRun <= 1'b1;
+      end
+      video_base <= video_base_driver;
+      video_size <= video_size_driver;
+      video_enable <= video_enable_driver;
       case(sysid_apb_PADDR)
         12'h00c : begin
           if(sysid_factory_doWrite) begin
@@ -10727,7 +11086,82 @@ module AlvxApb (
         default : begin
         end
       endcase
+      case(video_regs_apb_PADDR)
+        12'h00c : begin
+          if(video_regs_factory_doWrite) begin
+            video_underRun <= 1'b0;
+          end
+        end
+        default : begin
+        end
+      endcase
     end
+  end
+
+  always @(posedge io_pix_clk or posedge io_pix_reset) begin
+    if(io_pix_reset) begin
+      _zz_when_VgaCtrl_l334 <= 1'b0;
+      _zz_when_VgaCtrl_l334_1 <= 1'b0;
+      video_dma_io_frame_translated_payload_first <= 1'b1;
+      video_pixArea_frameTgl <= 1'b0;
+      video_pixArea_errTgl <= 1'b0;
+    end else begin
+      if(video_dma_io_frame_translated_fire) begin
+        video_dma_io_frame_translated_payload_first <= video_dma_io_frame_translated_payload_last;
+      end
+      if(video_pixArea_ctrl_io_frameStart) begin
+        _zz_when_VgaCtrl_l334_1 <= 1'b0;
+      end
+      if(when_VgaCtrl_l330) begin
+        _zz_when_VgaCtrl_l334 <= 1'b0;
+        _zz_when_VgaCtrl_l334_1 <= _zz_when_VgaCtrl_l334;
+      end
+      if(when_VgaCtrl_l334) begin
+        if(when_VgaCtrl_l335) begin
+          _zz_when_VgaCtrl_l334 <= 1'b1;
+        end
+      end
+      if(video_pixArea_ctrl_io_frameStart) begin
+        video_pixArea_frameTgl <= (! video_pixArea_frameTgl);
+      end
+      if(video_pixArea_ctrl_io_error) begin
+        video_pixArea_errTgl <= (! video_pixArea_errTgl);
+      end
+    end
+  end
+
+  always @(posedge io_pix_clk) begin
+    if(video_pixArea_ctrl_io_frameStart) begin
+      _zz_when_VgaCtrl_l335 <= 1'b1;
+    end
+    if(when_VgaCtrl_l323) begin
+      _zz_when_VgaCtrl_l335 <= 1'b0;
+    end
+  end
+
+  always @(posedge clk) begin
+    video_frameTglQ <= video_frameTglD;
+    video_errTglQ <= video_errTglD;
+    video_enQ <= video_enable;
+    case(video_regs_apb_PADDR)
+      12'h0 : begin
+        if(video_regs_factory_doWrite) begin
+          video_base_driver <= video_regs_apb_PWDATA[24 : 0];
+        end
+      end
+      12'h004 : begin
+        if(video_regs_factory_doWrite) begin
+          video_size_driver <= video_regs_apb_PWDATA[17 : 0];
+        end
+      end
+      12'h008 : begin
+        if(video_regs_factory_doWrite) begin
+          video_enable_driver <= video_regs_apb_PWDATA[0];
+        end
+      end
+      default : begin
+      end
+    endcase
   end
 
 
@@ -13519,7 +13953,7 @@ module FlowCCUnsafeByToggle (
   (* async_reg = "true" , altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg                 outputArea_flow_m2sPipe_payload_last;
   (* async_reg = "true" , altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [0:0]    outputArea_flow_m2sPipe_payload_fragment;
 
-  (* keep_hierarchy = "TRUE" *) BufferCC_5 inputArea_target_buffercc (
+  (* keep_hierarchy = "TRUE" *) BufferCC_12 inputArea_target_buffercc (
     .io_dataIn  (inputArea_target                    ), //i
     .io_dataOut (inputArea_target_buffercc_io_dataOut), //o
     .clk        (clk                                 ), //i
@@ -13568,7 +14002,7 @@ endmodule
 
 module Apb3Router (
   input  wire [19:0]   io_input_PADDR,
-  input  wire [6:0]    io_input_PSEL,
+  input  wire [7:0]    io_input_PSEL,
   input  wire          io_input_PENABLE,
   output wire          io_input_PREADY,
   input  wire          io_input_PWRITE,
@@ -13631,6 +14065,14 @@ module Apb3Router (
   output wire [31:0]   io_outputs_6_PWDATA,
   input  wire [31:0]   io_outputs_6_PRDATA,
   input  wire          io_outputs_6_PSLVERROR,
+  output wire [19:0]   io_outputs_7_PADDR,
+  output wire [0:0]    io_outputs_7_PSEL,
+  output wire          io_outputs_7_PENABLE,
+  input  wire          io_outputs_7_PREADY,
+  output wire          io_outputs_7_PWRITE,
+  output wire [31:0]   io_outputs_7_PWDATA,
+  input  wire [31:0]   io_outputs_7_PRDATA,
+  input  wire          io_outputs_7_PSLVERROR,
   input  wire          clk,
   input  wire          reset
 );
@@ -13644,6 +14086,7 @@ module Apb3Router (
   wire                _zz_selIndex_3;
   wire                _zz_selIndex_4;
   wire                _zz_selIndex_5;
+  wire                _zz_selIndex_6;
   reg        [2:0]    selIndex;
 
   always @(*) begin
@@ -13678,10 +14121,15 @@ module Apb3Router (
         _zz_io_input_PRDATA = io_outputs_5_PRDATA;
         _zz_io_input_PSLVERROR = io_outputs_5_PSLVERROR;
       end
-      default : begin
+      3'b110 : begin
         _zz_io_input_PREADY = io_outputs_6_PREADY;
         _zz_io_input_PRDATA = io_outputs_6_PRDATA;
         _zz_io_input_PSLVERROR = io_outputs_6_PSLVERROR;
+      end
+      default : begin
+        _zz_io_input_PREADY = io_outputs_7_PREADY;
+        _zz_io_input_PRDATA = io_outputs_7_PRDATA;
+        _zz_io_input_PSLVERROR = io_outputs_7_PSLVERROR;
       end
     endcase
   end
@@ -13721,17 +14169,23 @@ module Apb3Router (
   assign io_outputs_6_PSEL[0] = io_input_PSEL[6];
   assign io_outputs_6_PWRITE = io_input_PWRITE;
   assign io_outputs_6_PWDATA = io_input_PWDATA;
+  assign io_outputs_7_PADDR = io_input_PADDR;
+  assign io_outputs_7_PENABLE = io_input_PENABLE;
+  assign io_outputs_7_PSEL[0] = io_input_PSEL[7];
+  assign io_outputs_7_PWRITE = io_input_PWRITE;
+  assign io_outputs_7_PWDATA = io_input_PWDATA;
   assign _zz_selIndex = io_input_PSEL[3];
   assign _zz_selIndex_1 = io_input_PSEL[5];
   assign _zz_selIndex_2 = io_input_PSEL[6];
-  assign _zz_selIndex_3 = ((io_input_PSEL[1] || _zz_selIndex) || _zz_selIndex_1);
-  assign _zz_selIndex_4 = ((io_input_PSEL[2] || _zz_selIndex) || _zz_selIndex_2);
-  assign _zz_selIndex_5 = ((io_input_PSEL[4] || _zz_selIndex_1) || _zz_selIndex_2);
+  assign _zz_selIndex_3 = io_input_PSEL[7];
+  assign _zz_selIndex_4 = (((io_input_PSEL[1] || _zz_selIndex) || _zz_selIndex_1) || _zz_selIndex_3);
+  assign _zz_selIndex_5 = (((io_input_PSEL[2] || _zz_selIndex) || _zz_selIndex_2) || _zz_selIndex_3);
+  assign _zz_selIndex_6 = (((io_input_PSEL[4] || _zz_selIndex_1) || _zz_selIndex_2) || _zz_selIndex_3);
   assign io_input_PREADY = _zz_io_input_PREADY;
   assign io_input_PRDATA = _zz_io_input_PRDATA;
   assign io_input_PSLVERROR = _zz_io_input_PSLVERROR;
   always @(posedge clk) begin
-    selIndex <= {_zz_selIndex_5,{_zz_selIndex_4,_zz_selIndex_3}};
+    selIndex <= {_zz_selIndex_6,{_zz_selIndex_5,_zz_selIndex_4}};
   end
 
 
@@ -13747,7 +14201,7 @@ module Apb3Decoder (
   output wire [31:0]   io_input_PRDATA,
   output reg           io_input_PSLVERROR,
   output wire [19:0]   io_output_PADDR,
-  output reg  [6:0]    io_output_PSEL,
+  output reg  [7:0]    io_output_PSEL,
   output wire          io_output_PENABLE,
   input  wire          io_output_PREADY,
   output wire          io_output_PWRITE,
@@ -13770,6 +14224,7 @@ module Apb3Decoder (
     io_output_PSEL[4] = (((io_input_PADDR & (~ 20'h00fff)) == 20'h04000) && io_input_PSEL[0]);
     io_output_PSEL[5] = (((io_input_PADDR & (~ 20'h00fff)) == 20'h05000) && io_input_PSEL[0]);
     io_output_PSEL[6] = (((io_input_PADDR & (~ 20'h00fff)) == 20'h06000) && io_input_PSEL[0]);
+    io_output_PSEL[7] = (((io_input_PADDR & (~ 20'h00fff)) == 20'h07000) && io_input_PSEL[0]);
   end
 
   always @(*) begin
@@ -13787,7 +14242,839 @@ module Apb3Decoder (
     end
   end
 
-  assign when_Apb3Decoder_l88 = (io_input_PSEL[0] && (io_output_PSEL == 7'h0));
+  assign when_Apb3Decoder_l88 = (io_input_PSEL[0] && (io_output_PSEL == 8'h0));
+
+endmodule
+
+//BufferCC_11 replaced by BufferCC_10
+
+module BufferCC_10 (
+  input  wire          io_dataIn,
+  output wire          io_dataOut,
+  input  wire          clk,
+  input  wire          reset
+);
+
+  (* async_reg = "true" *) reg                 buffers_0;
+  (* async_reg = "true" *) reg                 buffers_1;
+
+  assign io_dataOut = buffers_1;
+  always @(posedge clk) begin
+    buffers_0 <= io_dataIn;
+    buffers_1 <= buffers_0;
+  end
+
+
+endmodule
+
+//TmdsEncoder_2 replaced by TmdsEncoder
+
+//TmdsEncoder_1 replaced by TmdsEncoder
+
+module TmdsEncoder (
+  input  wire [7:0]    io_VD,
+  input  wire [1:0]    io_CD,
+  input  wire          io_VDE,
+  output reg  [9:0]    io_TMDS,
+  input  wire          io_pix_clk,
+  input  wire          io_pix_reset
+);
+
+  wire       [3:0]    _zz_ones;
+  wire       [3:0]    _zz_ones_1;
+  wire       [3:0]    _zz_ones_2;
+  wire       [0:0]    _zz_ones_3;
+  wire       [3:0]    _zz_ones_4;
+  wire       [0:0]    _zz_ones_5;
+  wire       [3:0]    _zz_ones_6;
+  wire       [3:0]    _zz_ones_7;
+  wire       [0:0]    _zz_ones_8;
+  wire       [3:0]    _zz_ones_9;
+  wire       [0:0]    _zz_ones_10;
+  wire       [3:0]    _zz_ones_11;
+  wire       [3:0]    _zz_ones_12;
+  wire       [3:0]    _zz_ones_13;
+  wire       [0:0]    _zz_ones_14;
+  wire       [3:0]    _zz_ones_15;
+  wire       [0:0]    _zz_ones_16;
+  wire       [3:0]    _zz_ones_17;
+  wire       [3:0]    _zz_ones_18;
+  wire       [0:0]    _zz_ones_19;
+  wire       [3:0]    _zz_ones_20;
+  wire       [0:0]    _zz_ones_21;
+  wire       [3:0]    _zz_dw_disp;
+  wire       [3:0]    _zz_dw_disp_1;
+  wire       [3:0]    _zz_dw_disp_2;
+  wire       [3:0]    _zz_dw_disp_3;
+  wire       [0:0]    _zz_dw_disp_4;
+  wire       [3:0]    _zz_dw_disp_5;
+  wire       [0:0]    _zz_dw_disp_6;
+  wire       [3:0]    _zz_dw_disp_7;
+  wire       [3:0]    _zz_dw_disp_8;
+  wire       [0:0]    _zz_dw_disp_9;
+  wire       [3:0]    _zz_dw_disp_10;
+  wire       [0:0]    _zz_dw_disp_11;
+  wire       [3:0]    _zz_dw_disp_12;
+  wire       [3:0]    _zz_dw_disp_13;
+  wire       [3:0]    _zz_dw_disp_14;
+  wire       [0:0]    _zz_dw_disp_15;
+  wire       [3:0]    _zz_dw_disp_16;
+  wire       [0:0]    _zz_dw_disp_17;
+  wire       [3:0]    _zz_dw_disp_18;
+  wire       [3:0]    _zz_dw_disp_19;
+  wire       [0:0]    _zz_dw_disp_20;
+  wire       [3:0]    _zz_dw_disp_21;
+  wire       [0:0]    _zz_dw_disp_22;
+  wire       [3:0]    _zz_delta;
+  wire       [0:0]    _zz_delta_1;
+  wire       [3:0]    _zz_dc_bias_d;
+  wire       [3:0]    _zz_dc_bias_d_1;
+  wire       [0:0]    _zz_TMDS_data;
+  wire       [0:0]    _zz_TMDS_data_1;
+  reg        [3:0]    dc_bias;
+  wire       [3:0]    ones;
+  wire                XNOR_1;
+  wire                dw_0;
+  wire                dw_1;
+  wire                dw_2;
+  wire                dw_3;
+  wire                dw_4;
+  wire                dw_5;
+  wire                dw_6;
+  wire                dw_7;
+  wire                dw_8;
+  wire       [3:0]    dw_disp;
+  wire                sign_eq;
+  wire       [3:0]    delta;
+  wire                inv_dw;
+  wire       [3:0]    dc_bias_d;
+  wire       [9:0]    TMDS_data;
+  wire       [9:0]    TMDS_code;
+
+  assign _zz_ones = (_zz_ones_1 + _zz_ones_6);
+  assign _zz_ones_1 = (_zz_ones_2 + _zz_ones_4);
+  assign _zz_ones_3 = io_VD[0];
+  assign _zz_ones_2 = {3'd0, _zz_ones_3};
+  assign _zz_ones_5 = io_VD[1];
+  assign _zz_ones_4 = {3'd0, _zz_ones_5};
+  assign _zz_ones_6 = (_zz_ones_7 + _zz_ones_9);
+  assign _zz_ones_8 = io_VD[2];
+  assign _zz_ones_7 = {3'd0, _zz_ones_8};
+  assign _zz_ones_10 = io_VD[3];
+  assign _zz_ones_9 = {3'd0, _zz_ones_10};
+  assign _zz_ones_11 = (_zz_ones_12 + _zz_ones_17);
+  assign _zz_ones_12 = (_zz_ones_13 + _zz_ones_15);
+  assign _zz_ones_14 = io_VD[4];
+  assign _zz_ones_13 = {3'd0, _zz_ones_14};
+  assign _zz_ones_16 = io_VD[5];
+  assign _zz_ones_15 = {3'd0, _zz_ones_16};
+  assign _zz_ones_17 = (_zz_ones_18 + _zz_ones_20);
+  assign _zz_ones_19 = io_VD[6];
+  assign _zz_ones_18 = {3'd0, _zz_ones_19};
+  assign _zz_ones_21 = io_VD[7];
+  assign _zz_ones_20 = {3'd0, _zz_ones_21};
+  assign _zz_dw_disp = (_zz_dw_disp_1 + _zz_dw_disp_12);
+  assign _zz_dw_disp_1 = (_zz_dw_disp_2 + _zz_dw_disp_7);
+  assign _zz_dw_disp_2 = (_zz_dw_disp_3 + _zz_dw_disp_5);
+  assign _zz_dw_disp_4 = dw_0;
+  assign _zz_dw_disp_3 = {3'd0, _zz_dw_disp_4};
+  assign _zz_dw_disp_6 = dw_1;
+  assign _zz_dw_disp_5 = {3'd0, _zz_dw_disp_6};
+  assign _zz_dw_disp_7 = (_zz_dw_disp_8 + _zz_dw_disp_10);
+  assign _zz_dw_disp_9 = dw_2;
+  assign _zz_dw_disp_8 = {3'd0, _zz_dw_disp_9};
+  assign _zz_dw_disp_11 = dw_3;
+  assign _zz_dw_disp_10 = {3'd0, _zz_dw_disp_11};
+  assign _zz_dw_disp_12 = (_zz_dw_disp_13 + _zz_dw_disp_18);
+  assign _zz_dw_disp_13 = (_zz_dw_disp_14 + _zz_dw_disp_16);
+  assign _zz_dw_disp_15 = dw_4;
+  assign _zz_dw_disp_14 = {3'd0, _zz_dw_disp_15};
+  assign _zz_dw_disp_17 = dw_5;
+  assign _zz_dw_disp_16 = {3'd0, _zz_dw_disp_17};
+  assign _zz_dw_disp_18 = (_zz_dw_disp_19 + _zz_dw_disp_21);
+  assign _zz_dw_disp_20 = dw_6;
+  assign _zz_dw_disp_19 = {3'd0, _zz_dw_disp_20};
+  assign _zz_dw_disp_22 = dw_7;
+  assign _zz_dw_disp_21 = {3'd0, _zz_dw_disp_22};
+  assign _zz_delta_1 = ((dw_8 ^ (! sign_eq)) && (! ((dw_disp == 4'b0000) || (dc_bias == 4'b0000))));
+  assign _zz_delta = {3'd0, _zz_delta_1};
+  assign _zz_dc_bias_d = (dc_bias - delta);
+  assign _zz_dc_bias_d_1 = (dc_bias + delta);
+  assign _zz_TMDS_data = dw_1;
+  assign _zz_TMDS_data_1 = dw_0;
+  initial begin
+  `ifndef SYNTHESIS
+    dc_bias = {$urandom};
+  `endif
+  end
+
+  assign ones = (_zz_ones + _zz_ones_11);
+  assign XNOR_1 = ((4'b0100 < ones) || ((ones == 4'b0100) && (io_VD[0] == 1'b0)));
+  assign dw_8 = (! XNOR_1);
+  assign dw_7 = ((dw_6 ^ io_VD[7]) ^ XNOR_1);
+  assign dw_6 = ((dw_5 ^ io_VD[6]) ^ XNOR_1);
+  assign dw_5 = ((dw_4 ^ io_VD[5]) ^ XNOR_1);
+  assign dw_4 = ((dw_3 ^ io_VD[4]) ^ XNOR_1);
+  assign dw_3 = ((dw_2 ^ io_VD[3]) ^ XNOR_1);
+  assign dw_2 = ((dw_1 ^ io_VD[2]) ^ XNOR_1);
+  assign dw_1 = ((dw_0 ^ io_VD[1]) ^ XNOR_1);
+  assign dw_0 = io_VD[0];
+  assign dw_disp = (_zz_dw_disp + 4'b1100);
+  assign sign_eq = (dw_disp[3] == dc_bias[3]);
+  assign delta = (dw_disp - _zz_delta);
+  assign inv_dw = (((dw_disp == 4'b0000) || (dc_bias == 4'b0000)) ? (! dw_8) : sign_eq);
+  assign dc_bias_d = (inv_dw ? _zz_dc_bias_d : _zz_dc_bias_d_1);
+  assign TMDS_data = {{inv_dw,dw_8},({dw_7,{dw_6,{dw_5,{dw_4,{dw_3,{dw_2,{_zz_TMDS_data,_zz_TMDS_data_1}}}}}}} ^ (inv_dw ? 8'hff : 8'h0))};
+  assign TMDS_code = (io_CD[1] ? (io_CD[0] ? 10'h2ab : 10'h154) : (io_CD[0] ? 10'h0ab : 10'h354));
+  always @(posedge io_pix_clk) begin
+    io_TMDS <= (io_VDE ? TMDS_data : TMDS_code);
+    dc_bias <= (io_VDE ? dc_bias_d : 4'b0000);
+  end
+
+
+endmodule
+
+module VgaCtrl (
+  input  wire          io_softReset,
+  input  wire [11:0]   io_timings_h_syncStart,
+  input  wire [11:0]   io_timings_h_syncEnd,
+  input  wire [11:0]   io_timings_h_colorStart,
+  input  wire [11:0]   io_timings_h_colorEnd,
+  input  wire          io_timings_h_polarity,
+  input  wire [11:0]   io_timings_v_syncStart,
+  input  wire [11:0]   io_timings_v_syncEnd,
+  input  wire [11:0]   io_timings_v_colorStart,
+  input  wire [11:0]   io_timings_v_colorEnd,
+  input  wire          io_timings_v_polarity,
+  output wire          io_frameStart,
+  input  wire          io_pixels_valid,
+  output wire          io_pixels_ready,
+  input  wire [7:0]    io_pixels_payload_r,
+  input  wire [7:0]    io_pixels_payload_g,
+  input  wire [7:0]    io_pixels_payload_b,
+  output wire          io_vga_vSync,
+  output wire          io_vga_hSync,
+  output wire          io_vga_colorEn,
+  output wire [7:0]    io_vga_color_r,
+  output wire [7:0]    io_vga_color_g,
+  output wire [7:0]    io_vga_color_b,
+  output wire          io_error,
+  input  wire          io_pix_clk,
+  input  wire          io_pix_reset
+);
+
+  wire                when_VgaCtrl_l288;
+  reg        [11:0]   h_counter;
+  wire                h_syncStart;
+  wire                h_syncEnd;
+  wire                h_colorStart;
+  wire                h_colorEnd;
+  reg                 h_sync;
+  reg                 h_colorEn;
+  reg        [11:0]   v_counter;
+  wire                v_syncStart;
+  wire                v_syncEnd;
+  wire                v_colorStart;
+  wire                v_colorEnd;
+  reg                 v_sync;
+  reg                 v_colorEn;
+  wire                colorEn;
+
+  assign when_VgaCtrl_l288 = 1'b1;
+  assign h_syncStart = (h_counter == io_timings_h_syncStart);
+  assign h_syncEnd = (h_counter == io_timings_h_syncEnd);
+  assign h_colorStart = (h_counter == io_timings_h_colorStart);
+  assign h_colorEnd = (h_counter == io_timings_h_colorEnd);
+  assign v_syncStart = (v_counter == io_timings_v_syncStart);
+  assign v_syncEnd = (v_counter == io_timings_v_syncEnd);
+  assign v_colorStart = (v_counter == io_timings_v_colorStart);
+  assign v_colorEnd = (v_counter == io_timings_v_colorEnd);
+  assign colorEn = (h_colorEn && v_colorEn);
+  assign io_pixels_ready = (colorEn || io_softReset);
+  assign io_error = (colorEn && (! io_pixels_valid));
+  assign io_frameStart = (v_syncStart && h_syncStart);
+  assign io_vga_hSync = (h_sync ^ io_timings_h_polarity);
+  assign io_vga_vSync = (v_sync ^ io_timings_v_polarity);
+  assign io_vga_colorEn = colorEn;
+  assign io_vga_color_r = io_pixels_payload_r;
+  assign io_vga_color_g = io_pixels_payload_g;
+  assign io_vga_color_b = io_pixels_payload_b;
+  always @(posedge io_pix_clk or posedge io_pix_reset) begin
+    if(io_pix_reset) begin
+      h_counter <= 12'h0;
+      h_sync <= 1'b0;
+      h_colorEn <= 1'b0;
+      v_counter <= 12'h0;
+      v_sync <= 1'b0;
+      v_colorEn <= 1'b0;
+    end else begin
+      if(when_VgaCtrl_l288) begin
+        h_counter <= (h_counter + 12'h001);
+        if(h_syncEnd) begin
+          h_counter <= 12'h0;
+        end
+      end
+      if(h_syncStart) begin
+        h_sync <= 1'b1;
+      end
+      if(h_syncEnd) begin
+        h_sync <= 1'b0;
+      end
+      if(h_colorStart) begin
+        h_colorEn <= 1'b1;
+      end
+      if(h_colorEnd) begin
+        h_colorEn <= 1'b0;
+      end
+      if(io_softReset) begin
+        h_counter <= 12'h0;
+        h_sync <= 1'b0;
+        h_colorEn <= 1'b0;
+      end
+      if(h_syncEnd) begin
+        v_counter <= (v_counter + 12'h001);
+        if(v_syncEnd) begin
+          v_counter <= 12'h0;
+        end
+      end
+      if(v_syncStart) begin
+        v_sync <= 1'b1;
+      end
+      if(v_syncEnd) begin
+        v_sync <= 1'b0;
+      end
+      if(v_colorStart) begin
+        v_colorEn <= 1'b1;
+      end
+      if(v_colorEnd) begin
+        v_colorEn <= 1'b0;
+      end
+      if(io_softReset) begin
+        v_counter <= 12'h0;
+        v_sync <= 1'b0;
+        v_colorEn <= 1'b0;
+      end
+    end
+  end
+
+
+endmodule
+
+module BufferCC_9 (
+  input  wire          io_dataIn,
+  output wire          io_dataOut,
+  input  wire          io_pix_clk,
+  input  wire          io_pix_reset
+);
+
+  (* async_reg = "true" *) reg                 buffers_0;
+  (* async_reg = "true" *) reg                 buffers_1;
+
+  assign io_dataOut = buffers_1;
+  always @(posedge io_pix_clk) begin
+    buffers_0 <= io_dataIn;
+    buffers_1 <= buffers_0;
+  end
+
+
+endmodule
+
+module VideoDma (
+  input  wire          io_start,
+  output wire          io_busy,
+  input  wire [24:0]   io_base,
+  input  wire [17:0]   io_size,
+  output reg           io_mem_cmd_valid,
+  input  wire          io_mem_cmd_ready,
+  output wire [24:0]   io_mem_cmd_payload,
+  input  wire          io_mem_rsp_valid,
+  input  wire          io_mem_rsp_payload_last,
+  input  wire [31:0]   io_mem_rsp_payload_fragment,
+  output wire          io_frame_valid,
+  input  wire          io_frame_ready,
+  output wire          io_frame_payload_last,
+  output wire [31:0]   io_frame_payload_fragment,
+  input  wire          clk,
+  input  wire          reset,
+  input  wire          io_pix_clk,
+  input  wire          io_pix_reset
+);
+
+  wire                rspArea_fifo_io_push_ready;
+  wire                rspArea_fifo_io_pop_valid;
+  wire                rspArea_fifo_io_pop_payload_last;
+  wire       [31:0]   rspArea_fifo_io_pop_payload_fragment;
+  wire       [11:0]   rspArea_fifo_io_pushOccupancy;
+  wire       [11:0]   rspArea_fifo_io_popOccupancy;
+  wire       [8:0]    rspArea_frameClockArea_popCmdGray_buffercc_io_dataOut;
+  wire       [24:0]   _zz_io_mem_cmd_payload;
+  wire       [2:0]    _zz_rspArea_frameClockArea_popBeatCounter_valueNext;
+  wire       [0:0]    _zz_rspArea_frameClockArea_popBeatCounter_valueNext_1;
+  reg        [6:0]    _zz_pendingMemRsp;
+  reg        [6:0]    _zz_pendingMemRsp_1;
+  wire                io_mem_cmd_fire;
+  wire                when_Utils_l735;
+  reg                 pendingMemCmd_incrementIt;
+  reg                 pendingMemCmd_decrementIt;
+  wire       [3:0]    pendingMemCmd_valueNext;
+  reg        [3:0]    pendingMemCmd_value;
+  wire                pendingMemCmd_mayOverflow;
+  wire                pendingMemCmd_mayUnderflow;
+  wire                pendingMemCmd_willOverflowIfInc;
+  wire                pendingMemCmd_willOverflow;
+  wire                pendingMemCmd_willUnderflowIfDec;
+  wire                pendingMemCmd_willUnderflow;
+  reg        [3:0]    pendingMemCmd_finalIncrement;
+  wire                when_Utils_l767;
+  wire                when_Utils_l769;
+  reg        [6:0]    pendingMemRsp;
+  wire       [6:0]    _zz_pendingMemRsp_2;
+  wire                toManyPendingCmd;
+  wire                toManyPendingRsp;
+  reg                 isActive;
+  reg                 cmdActive;
+  reg        [17:0]   memCmdCounter;
+  wire                memCmdLast;
+  wire                when_VideoDma_l94;
+  wire                when_VideoDma_l102;
+  wire                when_VideoDma_l104;
+  wire                when_VideoDma_l108;
+  wire                memRsp_valid;
+  wire                memRsp_payload_last;
+  wire       [31:0]   memRsp_payload_fragment;
+  wire                fifoPop_valid;
+  wire                fifoPop_ready;
+  wire                fifoPop_payload_last;
+  wire       [31:0]   fifoPop_payload_fragment;
+  wire                memRsp_toStream_valid;
+  wire                memRsp_toStream_ready;
+  wire                memRsp_toStream_payload_last;
+  wire       [31:0]   memRsp_toStream_payload_fragment;
+  reg                 rspArea_frameClockArea_popBeatCounter_willIncrement;
+  wire                rspArea_frameClockArea_popBeatCounter_willClear;
+  reg        [2:0]    rspArea_frameClockArea_popBeatCounter_valueNext;
+  reg        [2:0]    rspArea_frameClockArea_popBeatCounter_value;
+  wire                rspArea_frameClockArea_popBeatCounter_willOverflowIfInc;
+  wire                rspArea_frameClockArea_popBeatCounter_willOverflow;
+  wire                rspArea_fifo_io_pop_fire;
+  reg        [8:0]    rspArea_frameClockArea_popCmdGray;
+  reg                 _zz_when_Utils_l452;
+  wire       [8:0]    _zz_when_Utils_l452_1;
+  reg                 _zz_when_Utils_l452_2;
+  reg                 _zz_when_Utils_l452_3;
+  reg                 _zz_when_Utils_l452_4;
+  reg                 _zz_when_Utils_l452_5;
+  reg                 _zz_when_Utils_l452_6;
+  reg                 _zz_when_Utils_l452_7;
+  reg                 _zz_when_Utils_l452_8;
+  reg                 _zz_when_Utils_l452_9;
+  wire                when_Utils_l452;
+  wire                when_Utils_l452_1;
+  wire                when_Utils_l452_2;
+  wire                when_Utils_l452_3;
+  wire                when_Utils_l452_4;
+  wire                when_Utils_l452_5;
+  wire                when_Utils_l452_6;
+  wire                when_Utils_l452_7;
+  wire                when_Utils_l452_8;
+  wire       [8:0]    rspArea_popCmdGray;
+  reg        [8:0]    rspArea_pushCmdGray;
+  reg                 _zz_when_Utils_l452_10;
+  wire       [8:0]    _zz_when_Utils_l452_11;
+  reg                 _zz_when_Utils_l452_12;
+  reg                 _zz_when_Utils_l452_13;
+  reg                 _zz_when_Utils_l452_14;
+  reg                 _zz_when_Utils_l452_15;
+  reg                 _zz_when_Utils_l452_16;
+  reg                 _zz_when_Utils_l452_17;
+  reg                 _zz_when_Utils_l452_18;
+  reg                 _zz_when_Utils_l452_19;
+  wire                when_Utils_l452_9;
+  wire                when_Utils_l452_10;
+  wire                when_Utils_l452_11;
+  wire                when_Utils_l452_12;
+  wire                when_Utils_l452_13;
+  wire                when_Utils_l452_14;
+  wire                when_Utils_l452_15;
+  wire                when_Utils_l452_16;
+  wire                when_Utils_l452_17;
+  wire       [32:0]   _zz_io_frame_payload_last;
+
+  assign _zz_io_mem_cmd_payload = {7'd0, memCmdCounter};
+  assign _zz_rspArea_frameClockArea_popBeatCounter_valueNext_1 = rspArea_frameClockArea_popBeatCounter_willIncrement;
+  assign _zz_rspArea_frameClockArea_popBeatCounter_valueNext = {2'd0, _zz_rspArea_frameClockArea_popBeatCounter_valueNext_1};
+  StreamFifoCC rspArea_fifo (
+    .io_push_valid            (memRsp_toStream_valid                     ), //i
+    .io_push_ready            (rspArea_fifo_io_push_ready                ), //o
+    .io_push_payload_last     (memRsp_toStream_payload_last              ), //i
+    .io_push_payload_fragment (memRsp_toStream_payload_fragment[31:0]    ), //i
+    .io_pop_valid             (rspArea_fifo_io_pop_valid                 ), //o
+    .io_pop_ready             (fifoPop_ready                             ), //i
+    .io_pop_payload_last      (rspArea_fifo_io_pop_payload_last          ), //o
+    .io_pop_payload_fragment  (rspArea_fifo_io_pop_payload_fragment[31:0]), //o
+    .io_pushOccupancy         (rspArea_fifo_io_pushOccupancy[11:0]       ), //o
+    .io_popOccupancy          (rspArea_fifo_io_popOccupancy[11:0]        ), //o
+    .clk                      (clk                                       ), //i
+    .reset                    (reset                                     ), //i
+    .io_pix_clk               (io_pix_clk                                )  //i
+  );
+  (* keep_hierarchy = "TRUE" *) BufferCC_8 rspArea_frameClockArea_popCmdGray_buffercc (
+    .io_dataIn  (rspArea_frameClockArea_popCmdGray[8:0]                    ), //i
+    .io_dataOut (rspArea_frameClockArea_popCmdGray_buffercc_io_dataOut[8:0]), //o
+    .clk        (clk                                                       ), //i
+    .reset      (reset                                                     )  //i
+  );
+  always @(*) begin
+    _zz_pendingMemRsp = _zz_pendingMemRsp_1;
+    if(io_mem_rsp_valid) begin
+      _zz_pendingMemRsp = (_zz_pendingMemRsp_1 - 7'h01);
+    end
+  end
+
+  always @(*) begin
+    _zz_pendingMemRsp_1 = _zz_pendingMemRsp_2;
+    if(io_mem_cmd_fire) begin
+      _zz_pendingMemRsp_1 = (_zz_pendingMemRsp_2 + 7'h08);
+    end
+  end
+
+  assign io_mem_cmd_fire = (io_mem_cmd_valid && io_mem_cmd_ready);
+  assign when_Utils_l735 = (io_mem_rsp_valid && io_mem_rsp_payload_last);
+  always @(*) begin
+    pendingMemCmd_incrementIt = 1'b0;
+    if(io_mem_cmd_fire) begin
+      pendingMemCmd_incrementIt = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    pendingMemCmd_decrementIt = 1'b0;
+    if(when_Utils_l735) begin
+      pendingMemCmd_decrementIt = 1'b1;
+    end
+  end
+
+  assign pendingMemCmd_mayOverflow = (pendingMemCmd_value == 4'b1111);
+  assign pendingMemCmd_mayUnderflow = (pendingMemCmd_value == 4'b0000);
+  assign pendingMemCmd_willOverflowIfInc = (pendingMemCmd_mayOverflow && (! pendingMemCmd_decrementIt));
+  assign pendingMemCmd_willOverflow = (pendingMemCmd_willOverflowIfInc && pendingMemCmd_incrementIt);
+  assign pendingMemCmd_willUnderflowIfDec = (pendingMemCmd_mayUnderflow && (! pendingMemCmd_incrementIt));
+  assign pendingMemCmd_willUnderflow = (pendingMemCmd_willUnderflowIfDec && pendingMemCmd_decrementIt);
+  assign when_Utils_l767 = (pendingMemCmd_incrementIt && (! pendingMemCmd_decrementIt));
+  always @(*) begin
+    if(when_Utils_l767) begin
+      pendingMemCmd_finalIncrement = 4'b0001;
+    end else begin
+      if(when_Utils_l769) begin
+        pendingMemCmd_finalIncrement = 4'b1111;
+      end else begin
+        pendingMemCmd_finalIncrement = 4'b0000;
+      end
+    end
+  end
+
+  assign when_Utils_l769 = ((! pendingMemCmd_incrementIt) && pendingMemCmd_decrementIt);
+  assign pendingMemCmd_valueNext = (pendingMemCmd_value + pendingMemCmd_finalIncrement);
+  assign _zz_pendingMemRsp_2 = pendingMemRsp;
+  assign toManyPendingCmd = (4'b1110 < pendingMemCmd_value);
+  assign io_busy = isActive;
+  assign memCmdLast = (memCmdCounter == io_size);
+  always @(*) begin
+    io_mem_cmd_valid = 1'b0;
+    if(!when_VideoDma_l94) begin
+      if(cmdActive) begin
+        if(when_VideoDma_l102) begin
+          io_mem_cmd_valid = 1'b1;
+        end
+      end
+    end
+  end
+
+  assign io_mem_cmd_payload = (io_base + _zz_io_mem_cmd_payload);
+  assign when_VideoDma_l94 = (! isActive);
+  assign when_VideoDma_l102 = ((! toManyPendingCmd) && (! toManyPendingRsp));
+  assign when_VideoDma_l104 = (memCmdLast && io_mem_cmd_ready);
+  assign when_VideoDma_l108 = (pendingMemRsp == 7'h0);
+  assign memRsp_valid = io_mem_rsp_valid;
+  assign memRsp_payload_last = ((! cmdActive) && (pendingMemRsp == 7'h01));
+  assign memRsp_payload_fragment = io_mem_rsp_payload_fragment;
+  assign memRsp_toStream_valid = memRsp_valid;
+  assign memRsp_toStream_payload_last = memRsp_payload_last;
+  assign memRsp_toStream_payload_fragment = memRsp_payload_fragment;
+  assign memRsp_toStream_ready = rspArea_fifo_io_push_ready;
+  assign fifoPop_valid = rspArea_fifo_io_pop_valid;
+  assign fifoPop_payload_last = rspArea_fifo_io_pop_payload_last;
+  assign fifoPop_payload_fragment = rspArea_fifo_io_pop_payload_fragment;
+  always @(*) begin
+    rspArea_frameClockArea_popBeatCounter_willIncrement = 1'b0;
+    if(rspArea_fifo_io_pop_fire) begin
+      rspArea_frameClockArea_popBeatCounter_willIncrement = 1'b1;
+    end
+  end
+
+  assign rspArea_frameClockArea_popBeatCounter_willClear = 1'b0;
+  assign rspArea_frameClockArea_popBeatCounter_willOverflowIfInc = (rspArea_frameClockArea_popBeatCounter_value == 3'b111);
+  assign rspArea_frameClockArea_popBeatCounter_willOverflow = (rspArea_frameClockArea_popBeatCounter_willOverflowIfInc && rspArea_frameClockArea_popBeatCounter_willIncrement);
+  always @(*) begin
+    rspArea_frameClockArea_popBeatCounter_valueNext = (rspArea_frameClockArea_popBeatCounter_value + _zz_rspArea_frameClockArea_popBeatCounter_valueNext);
+    if(rspArea_frameClockArea_popBeatCounter_willClear) begin
+      rspArea_frameClockArea_popBeatCounter_valueNext = 3'b000;
+    end
+  end
+
+  assign rspArea_fifo_io_pop_fire = (rspArea_fifo_io_pop_valid && fifoPop_ready);
+  assign _zz_when_Utils_l452_1 = {1'b1,{rspArea_frameClockArea_popCmdGray[6 : 0],_zz_when_Utils_l452}};
+  always @(*) begin
+    _zz_when_Utils_l452_2 = _zz_when_Utils_l452_3;
+    if(when_Utils_l452_7) begin
+      _zz_when_Utils_l452_2 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_3 = _zz_when_Utils_l452_4;
+    if(when_Utils_l452_6) begin
+      _zz_when_Utils_l452_3 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_4 = _zz_when_Utils_l452_5;
+    if(when_Utils_l452_5) begin
+      _zz_when_Utils_l452_4 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_5 = _zz_when_Utils_l452_6;
+    if(when_Utils_l452_4) begin
+      _zz_when_Utils_l452_5 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_6 = _zz_when_Utils_l452_7;
+    if(when_Utils_l452_3) begin
+      _zz_when_Utils_l452_6 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_7 = _zz_when_Utils_l452_8;
+    if(when_Utils_l452_2) begin
+      _zz_when_Utils_l452_7 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_8 = _zz_when_Utils_l452_9;
+    if(when_Utils_l452_1) begin
+      _zz_when_Utils_l452_8 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_9 = 1'b0;
+    if(when_Utils_l452) begin
+      _zz_when_Utils_l452_9 = 1'b1;
+    end
+  end
+
+  assign when_Utils_l452 = (_zz_when_Utils_l452_1[0] && (! 1'b0));
+  assign when_Utils_l452_1 = (_zz_when_Utils_l452_1[1] && (! _zz_when_Utils_l452_9));
+  assign when_Utils_l452_2 = (_zz_when_Utils_l452_1[2] && (! _zz_when_Utils_l452_8));
+  assign when_Utils_l452_3 = (_zz_when_Utils_l452_1[3] && (! _zz_when_Utils_l452_7));
+  assign when_Utils_l452_4 = (_zz_when_Utils_l452_1[4] && (! _zz_when_Utils_l452_6));
+  assign when_Utils_l452_5 = (_zz_when_Utils_l452_1[5] && (! _zz_when_Utils_l452_5));
+  assign when_Utils_l452_6 = (_zz_when_Utils_l452_1[6] && (! _zz_when_Utils_l452_4));
+  assign when_Utils_l452_7 = (_zz_when_Utils_l452_1[7] && (! _zz_when_Utils_l452_3));
+  assign when_Utils_l452_8 = (_zz_when_Utils_l452_1[8] && (! _zz_when_Utils_l452_2));
+  assign rspArea_popCmdGray = rspArea_frameClockArea_popCmdGray_buffercc_io_dataOut;
+  assign _zz_when_Utils_l452_11 = {1'b1,{rspArea_pushCmdGray[6 : 0],_zz_when_Utils_l452_10}};
+  always @(*) begin
+    _zz_when_Utils_l452_12 = _zz_when_Utils_l452_13;
+    if(when_Utils_l452_16) begin
+      _zz_when_Utils_l452_12 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_13 = _zz_when_Utils_l452_14;
+    if(when_Utils_l452_15) begin
+      _zz_when_Utils_l452_13 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_14 = _zz_when_Utils_l452_15;
+    if(when_Utils_l452_14) begin
+      _zz_when_Utils_l452_14 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_15 = _zz_when_Utils_l452_16;
+    if(when_Utils_l452_13) begin
+      _zz_when_Utils_l452_15 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_16 = _zz_when_Utils_l452_17;
+    if(when_Utils_l452_12) begin
+      _zz_when_Utils_l452_16 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_17 = _zz_when_Utils_l452_18;
+    if(when_Utils_l452_11) begin
+      _zz_when_Utils_l452_17 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_18 = _zz_when_Utils_l452_19;
+    if(when_Utils_l452_10) begin
+      _zz_when_Utils_l452_18 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_19 = 1'b0;
+    if(when_Utils_l452_9) begin
+      _zz_when_Utils_l452_19 = 1'b1;
+    end
+  end
+
+  assign when_Utils_l452_9 = (_zz_when_Utils_l452_11[0] && (! 1'b0));
+  assign when_Utils_l452_10 = (_zz_when_Utils_l452_11[1] && (! _zz_when_Utils_l452_19));
+  assign when_Utils_l452_11 = (_zz_when_Utils_l452_11[2] && (! _zz_when_Utils_l452_18));
+  assign when_Utils_l452_12 = (_zz_when_Utils_l452_11[3] && (! _zz_when_Utils_l452_17));
+  assign when_Utils_l452_13 = (_zz_when_Utils_l452_11[4] && (! _zz_when_Utils_l452_16));
+  assign when_Utils_l452_14 = (_zz_when_Utils_l452_11[5] && (! _zz_when_Utils_l452_15));
+  assign when_Utils_l452_15 = (_zz_when_Utils_l452_11[6] && (! _zz_when_Utils_l452_14));
+  assign when_Utils_l452_16 = (_zz_when_Utils_l452_11[7] && (! _zz_when_Utils_l452_13));
+  assign when_Utils_l452_17 = (_zz_when_Utils_l452_11[8] && (! _zz_when_Utils_l452_12));
+  assign toManyPendingRsp = ((rspArea_pushCmdGray[8 : 7] == (~ rspArea_popCmdGray[8 : 7])) && (rspArea_pushCmdGray[6 : 0] == rspArea_popCmdGray[6 : 0]));
+  assign io_frame_valid = fifoPop_valid;
+  assign fifoPop_ready = io_frame_ready;
+  assign _zz_io_frame_payload_last = {fifoPop_payload_fragment,fifoPop_payload_last};
+  assign io_frame_payload_last = _zz_io_frame_payload_last[0];
+  assign io_frame_payload_fragment = _zz_io_frame_payload_last[32 : 1];
+  always @(posedge clk or posedge reset) begin
+    if(reset) begin
+      pendingMemCmd_value <= 4'b0000;
+      pendingMemRsp <= 7'h0;
+      isActive <= 1'b0;
+      cmdActive <= 1'b0;
+      rspArea_pushCmdGray <= 9'h0;
+      _zz_when_Utils_l452_10 <= 1'b1;
+    end else begin
+      pendingMemCmd_value <= pendingMemCmd_valueNext;
+      pendingMemRsp <= _zz_pendingMemRsp;
+      if(when_VideoDma_l94) begin
+        if(io_start) begin
+          isActive <= 1'b1;
+          cmdActive <= 1'b1;
+        end
+      end else begin
+        if(cmdActive) begin
+          if(when_VideoDma_l102) begin
+            if(when_VideoDma_l104) begin
+              cmdActive <= 1'b0;
+            end
+          end
+        end else begin
+          if(when_VideoDma_l108) begin
+            isActive <= 1'b0;
+          end
+        end
+      end
+      if(io_mem_cmd_fire) begin
+        if(when_Utils_l452_9) begin
+          rspArea_pushCmdGray[0] <= (! rspArea_pushCmdGray[0]);
+        end
+        if(when_Utils_l452_10) begin
+          rspArea_pushCmdGray[1] <= (! rspArea_pushCmdGray[1]);
+        end
+        if(when_Utils_l452_11) begin
+          rspArea_pushCmdGray[2] <= (! rspArea_pushCmdGray[2]);
+        end
+        if(when_Utils_l452_12) begin
+          rspArea_pushCmdGray[3] <= (! rspArea_pushCmdGray[3]);
+        end
+        if(when_Utils_l452_13) begin
+          rspArea_pushCmdGray[4] <= (! rspArea_pushCmdGray[4]);
+        end
+        if(when_Utils_l452_14) begin
+          rspArea_pushCmdGray[5] <= (! rspArea_pushCmdGray[5]);
+        end
+        if(when_Utils_l452_15) begin
+          rspArea_pushCmdGray[6] <= (! rspArea_pushCmdGray[6]);
+        end
+        if(when_Utils_l452_16) begin
+          rspArea_pushCmdGray[7] <= (! rspArea_pushCmdGray[7]);
+        end
+        if(when_Utils_l452_17) begin
+          rspArea_pushCmdGray[8] <= (! rspArea_pushCmdGray[8]);
+        end
+        _zz_when_Utils_l452_10 <= (! _zz_when_Utils_l452_10);
+      end
+    end
+  end
+
+  always @(posedge clk) begin
+    if(when_VideoDma_l94) begin
+      if(io_start) begin
+        memCmdCounter <= 18'h0;
+      end
+    end
+    if(io_mem_cmd_fire) begin
+      memCmdCounter <= (memCmdCounter + 18'h00001);
+    end
+  end
+
+  always @(posedge io_pix_clk or posedge io_pix_reset) begin
+    if(io_pix_reset) begin
+      rspArea_frameClockArea_popBeatCounter_value <= 3'b000;
+      rspArea_frameClockArea_popCmdGray <= 9'h0;
+      _zz_when_Utils_l452 <= 1'b1;
+    end else begin
+      rspArea_frameClockArea_popBeatCounter_value <= rspArea_frameClockArea_popBeatCounter_valueNext;
+      if(rspArea_frameClockArea_popBeatCounter_willOverflow) begin
+        if(when_Utils_l452) begin
+          rspArea_frameClockArea_popCmdGray[0] <= (! rspArea_frameClockArea_popCmdGray[0]);
+        end
+        if(when_Utils_l452_1) begin
+          rspArea_frameClockArea_popCmdGray[1] <= (! rspArea_frameClockArea_popCmdGray[1]);
+        end
+        if(when_Utils_l452_2) begin
+          rspArea_frameClockArea_popCmdGray[2] <= (! rspArea_frameClockArea_popCmdGray[2]);
+        end
+        if(when_Utils_l452_3) begin
+          rspArea_frameClockArea_popCmdGray[3] <= (! rspArea_frameClockArea_popCmdGray[3]);
+        end
+        if(when_Utils_l452_4) begin
+          rspArea_frameClockArea_popCmdGray[4] <= (! rspArea_frameClockArea_popCmdGray[4]);
+        end
+        if(when_Utils_l452_5) begin
+          rspArea_frameClockArea_popCmdGray[5] <= (! rspArea_frameClockArea_popCmdGray[5]);
+        end
+        if(when_Utils_l452_6) begin
+          rspArea_frameClockArea_popCmdGray[6] <= (! rspArea_frameClockArea_popCmdGray[6]);
+        end
+        if(when_Utils_l452_7) begin
+          rspArea_frameClockArea_popCmdGray[7] <= (! rspArea_frameClockArea_popCmdGray[7]);
+        end
+        if(when_Utils_l452_8) begin
+          rspArea_frameClockArea_popCmdGray[8] <= (! rspArea_frameClockArea_popCmdGray[8]);
+        end
+        _zz_when_Utils_l452 <= (! _zz_when_Utils_l452);
+      end
+    end
+  end
+
 
 endmodule
 
@@ -14770,7 +16057,7 @@ module Apb3Gpio (
 
 endmodule
 
-module BufferCC_5 (
+module BufferCC_12 (
   input  wire          io_dataIn,
   output wire          io_dataOut,
   input  wire          clk,
@@ -14791,6 +16078,273 @@ module BufferCC_5 (
   always @(posedge clk) begin
     buffers_0 <= io_dataIn;
     buffers_1 <= buffers_0;
+  end
+
+
+endmodule
+
+module BufferCC_8 (
+  input  wire [8:0]    io_dataIn,
+  output wire [8:0]    io_dataOut,
+  input  wire          clk,
+  input  wire          reset
+);
+
+  (* async_reg = "true" *) reg        [8:0]    buffers_0;
+  (* async_reg = "true" *) reg        [8:0]    buffers_1;
+
+  assign io_dataOut = buffers_1;
+  always @(posedge clk) begin
+    buffers_0 <= io_dataIn;
+    buffers_1 <= buffers_0;
+  end
+
+
+endmodule
+
+module StreamFifoCC (
+  input  wire          io_push_valid,
+  output wire          io_push_ready,
+  input  wire          io_push_payload_last,
+  input  wire [31:0]   io_push_payload_fragment,
+  output wire          io_pop_valid,
+  input  wire          io_pop_ready,
+  output wire          io_pop_payload_last,
+  output wire [31:0]   io_pop_payload_fragment,
+  output wire [11:0]   io_pushOccupancy,
+  output wire [11:0]   io_popOccupancy,
+  input  wire          clk,
+  input  wire          reset,
+  input  wire          io_pix_clk
+);
+
+  reg        [32:0]   ram_spinal_port1;
+  wire       [11:0]   popToPushGray_buffercc_io_dataOut;
+  wire                reset_asyncAssertSyncDeassert_buffercc_io_dataOut;
+  wire       [11:0]   pushToPopGray_buffercc_io_dataOut;
+  wire       [11:0]   _zz_pushCC_pushPtrGray;
+  wire       [10:0]   _zz_ram_port;
+  wire       [32:0]   _zz_ram_port_1;
+  wire       [0:0]    _zz_io_pushOccupancy_11;
+  wire       [1:0]    _zz_io_pushOccupancy_12;
+  wire       [11:0]   _zz_popCC_popPtrGray;
+  wire       [0:0]    _zz_io_popOccupancy_11;
+  wire       [1:0]    _zz_io_popOccupancy_12;
+  reg                 _zz_1;
+  wire       [11:0]   popToPushGray;
+  wire       [11:0]   pushToPopGray;
+  reg        [11:0]   pushCC_pushPtr;
+  wire       [11:0]   pushCC_pushPtrPlus;
+  wire                io_push_fire;
+  (* altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [11:0]   pushCC_pushPtrGray;
+  wire       [11:0]   pushCC_popPtrGray;
+  wire                pushCC_full;
+  wire                _zz_io_pushOccupancy;
+  wire                _zz_io_pushOccupancy_1;
+  wire                _zz_io_pushOccupancy_2;
+  wire                _zz_io_pushOccupancy_3;
+  wire                _zz_io_pushOccupancy_4;
+  wire                _zz_io_pushOccupancy_5;
+  wire                _zz_io_pushOccupancy_6;
+  wire                _zz_io_pushOccupancy_7;
+  wire                _zz_io_pushOccupancy_8;
+  wire                _zz_io_pushOccupancy_9;
+  wire                _zz_io_pushOccupancy_10;
+  wire                reset_asyncAssertSyncDeassert;
+  wire                reset_synchronized;
+  reg        [11:0]   popCC_popPtr;
+  (* keep , syn_keep *) wire       [11:0]   popCC_popPtrPlus /* synthesis syn_keep = 1 */ ;
+  wire       [11:0]   popCC_popPtrGray;
+  wire       [11:0]   popCC_pushPtrGray;
+  wire                popCC_addressGen_valid;
+  reg                 popCC_addressGen_ready;
+  wire       [10:0]   popCC_addressGen_payload;
+  wire                popCC_empty;
+  wire                popCC_addressGen_fire;
+  wire                popCC_readArbitation_valid;
+  wire                popCC_readArbitation_ready;
+  wire       [10:0]   popCC_readArbitation_payload;
+  reg                 popCC_addressGen_rValid;
+  reg        [10:0]   popCC_addressGen_rData;
+  wire                when_Stream_l477;
+  wire                popCC_readPort_cmd_valid;
+  wire       [10:0]   popCC_readPort_cmd_payload;
+  wire                popCC_readPort_rsp_last;
+  wire       [31:0]   popCC_readPort_rsp_fragment;
+  wire       [32:0]   _zz_popCC_readPort_rsp_last;
+  wire                popCC_addressGen_toFlowFire_valid;
+  wire       [10:0]   popCC_addressGen_toFlowFire_payload;
+  wire                popCC_readArbitation_translated_valid;
+  wire                popCC_readArbitation_translated_ready;
+  wire                popCC_readArbitation_translated_payload_last;
+  wire       [31:0]   popCC_readArbitation_translated_payload_fragment;
+  wire                popCC_readArbitation_fire;
+  (* altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [11:0]   popCC_ptrToPush;
+  reg        [11:0]   popCC_ptrToOccupancy;
+  wire                _zz_io_popOccupancy;
+  wire                _zz_io_popOccupancy_1;
+  wire                _zz_io_popOccupancy_2;
+  wire                _zz_io_popOccupancy_3;
+  wire                _zz_io_popOccupancy_4;
+  wire                _zz_io_popOccupancy_5;
+  wire                _zz_io_popOccupancy_6;
+  wire                _zz_io_popOccupancy_7;
+  wire                _zz_io_popOccupancy_8;
+  wire                _zz_io_popOccupancy_9;
+  wire                _zz_io_popOccupancy_10;
+  reg [32:0] ram [0:2047];
+
+  assign _zz_pushCC_pushPtrGray = (pushCC_pushPtrPlus >>> 1'b1);
+  assign _zz_ram_port = pushCC_pushPtr[10:0];
+  assign _zz_popCC_popPtrGray = (popCC_popPtr >>> 1'b1);
+  assign _zz_ram_port_1 = {io_push_payload_fragment,io_push_payload_last};
+  assign _zz_io_pushOccupancy_11 = _zz_io_pushOccupancy_1;
+  assign _zz_io_pushOccupancy_12 = {_zz_io_pushOccupancy,(pushCC_popPtrGray[0] ^ _zz_io_pushOccupancy)};
+  assign _zz_io_popOccupancy_11 = _zz_io_popOccupancy_1;
+  assign _zz_io_popOccupancy_12 = {_zz_io_popOccupancy,(popCC_pushPtrGray[0] ^ _zz_io_popOccupancy)};
+  always @(posedge clk) begin
+    if(_zz_1) begin
+      ram[_zz_ram_port] <= _zz_ram_port_1;
+    end
+  end
+
+  always @(posedge io_pix_clk) begin
+    if(popCC_readPort_cmd_valid) begin
+      ram_spinal_port1 <= ram[popCC_readPort_cmd_payload];
+    end
+  end
+
+  (* keep_hierarchy = "TRUE" *) BufferCC_5 popToPushGray_buffercc (
+    .io_dataIn  (popToPushGray[11:0]                    ), //i
+    .io_dataOut (popToPushGray_buffercc_io_dataOut[11:0]), //o
+    .clk        (clk                                    ), //i
+    .reset      (reset                                  )  //i
+  );
+  (* keep_hierarchy = "TRUE" *) BufferCC_6 reset_asyncAssertSyncDeassert_buffercc (
+    .io_dataIn  (reset_asyncAssertSyncDeassert                    ), //i
+    .io_dataOut (reset_asyncAssertSyncDeassert_buffercc_io_dataOut), //o
+    .io_pix_clk (io_pix_clk                                       ), //i
+    .reset      (reset                                            )  //i
+  );
+  (* keep_hierarchy = "TRUE" *) BufferCC_7 pushToPopGray_buffercc (
+    .io_dataIn          (pushToPopGray[11:0]                    ), //i
+    .io_dataOut         (pushToPopGray_buffercc_io_dataOut[11:0]), //o
+    .io_pix_clk         (io_pix_clk                             ), //i
+    .reset_synchronized (reset_synchronized                     )  //i
+  );
+  always @(*) begin
+    _zz_1 = 1'b0;
+    if(io_push_fire) begin
+      _zz_1 = 1'b1;
+    end
+  end
+
+  assign pushCC_pushPtrPlus = (pushCC_pushPtr + 12'h001);
+  assign io_push_fire = (io_push_valid && io_push_ready);
+  assign pushCC_popPtrGray = popToPushGray_buffercc_io_dataOut;
+  assign pushCC_full = ((pushCC_pushPtrGray[11 : 10] == (~ pushCC_popPtrGray[11 : 10])) && (pushCC_pushPtrGray[9 : 0] == pushCC_popPtrGray[9 : 0]));
+  assign io_push_ready = (! pushCC_full);
+  assign _zz_io_pushOccupancy = (pushCC_popPtrGray[1] ^ _zz_io_pushOccupancy_1);
+  assign _zz_io_pushOccupancy_1 = (pushCC_popPtrGray[2] ^ _zz_io_pushOccupancy_2);
+  assign _zz_io_pushOccupancy_2 = (pushCC_popPtrGray[3] ^ _zz_io_pushOccupancy_3);
+  assign _zz_io_pushOccupancy_3 = (pushCC_popPtrGray[4] ^ _zz_io_pushOccupancy_4);
+  assign _zz_io_pushOccupancy_4 = (pushCC_popPtrGray[5] ^ _zz_io_pushOccupancy_5);
+  assign _zz_io_pushOccupancy_5 = (pushCC_popPtrGray[6] ^ _zz_io_pushOccupancy_6);
+  assign _zz_io_pushOccupancy_6 = (pushCC_popPtrGray[7] ^ _zz_io_pushOccupancy_7);
+  assign _zz_io_pushOccupancy_7 = (pushCC_popPtrGray[8] ^ _zz_io_pushOccupancy_8);
+  assign _zz_io_pushOccupancy_8 = (pushCC_popPtrGray[9] ^ _zz_io_pushOccupancy_9);
+  assign _zz_io_pushOccupancy_9 = (pushCC_popPtrGray[10] ^ _zz_io_pushOccupancy_10);
+  assign _zz_io_pushOccupancy_10 = pushCC_popPtrGray[11];
+  assign io_pushOccupancy = (pushCC_pushPtr - {_zz_io_pushOccupancy_10,{_zz_io_pushOccupancy_9,{_zz_io_pushOccupancy_8,{_zz_io_pushOccupancy_7,{_zz_io_pushOccupancy_6,{_zz_io_pushOccupancy_5,{_zz_io_pushOccupancy_4,{_zz_io_pushOccupancy_3,{_zz_io_pushOccupancy_2,{_zz_io_pushOccupancy_11,_zz_io_pushOccupancy_12}}}}}}}}}});
+  assign reset_asyncAssertSyncDeassert = (1'b0 ^ 1'b0);
+  assign reset_synchronized = reset_asyncAssertSyncDeassert_buffercc_io_dataOut;
+  assign popCC_popPtrPlus = (popCC_popPtr + 12'h001);
+  assign popCC_popPtrGray = (_zz_popCC_popPtrGray ^ popCC_popPtr);
+  assign popCC_pushPtrGray = pushToPopGray_buffercc_io_dataOut;
+  assign popCC_empty = (popCC_popPtrGray == popCC_pushPtrGray);
+  assign popCC_addressGen_valid = (! popCC_empty);
+  assign popCC_addressGen_payload = popCC_popPtr[10:0];
+  assign popCC_addressGen_fire = (popCC_addressGen_valid && popCC_addressGen_ready);
+  always @(*) begin
+    popCC_addressGen_ready = popCC_readArbitation_ready;
+    if(when_Stream_l477) begin
+      popCC_addressGen_ready = 1'b1;
+    end
+  end
+
+  assign when_Stream_l477 = (! popCC_readArbitation_valid);
+  assign popCC_readArbitation_valid = popCC_addressGen_rValid;
+  assign popCC_readArbitation_payload = popCC_addressGen_rData;
+  assign _zz_popCC_readPort_rsp_last = ram_spinal_port1;
+  assign popCC_readPort_rsp_last = _zz_popCC_readPort_rsp_last[0];
+  assign popCC_readPort_rsp_fragment = _zz_popCC_readPort_rsp_last[32 : 1];
+  assign popCC_addressGen_toFlowFire_valid = popCC_addressGen_fire;
+  assign popCC_addressGen_toFlowFire_payload = popCC_addressGen_payload;
+  assign popCC_readPort_cmd_valid = popCC_addressGen_toFlowFire_valid;
+  assign popCC_readPort_cmd_payload = popCC_addressGen_toFlowFire_payload;
+  assign popCC_readArbitation_translated_valid = popCC_readArbitation_valid;
+  assign popCC_readArbitation_ready = popCC_readArbitation_translated_ready;
+  assign popCC_readArbitation_translated_payload_last = popCC_readPort_rsp_last;
+  assign popCC_readArbitation_translated_payload_fragment = popCC_readPort_rsp_fragment;
+  assign io_pop_valid = popCC_readArbitation_translated_valid;
+  assign popCC_readArbitation_translated_ready = io_pop_ready;
+  assign io_pop_payload_last = popCC_readArbitation_translated_payload_last;
+  assign io_pop_payload_fragment = popCC_readArbitation_translated_payload_fragment;
+  assign popCC_readArbitation_fire = (popCC_readArbitation_valid && popCC_readArbitation_ready);
+  assign _zz_io_popOccupancy = (popCC_pushPtrGray[1] ^ _zz_io_popOccupancy_1);
+  assign _zz_io_popOccupancy_1 = (popCC_pushPtrGray[2] ^ _zz_io_popOccupancy_2);
+  assign _zz_io_popOccupancy_2 = (popCC_pushPtrGray[3] ^ _zz_io_popOccupancy_3);
+  assign _zz_io_popOccupancy_3 = (popCC_pushPtrGray[4] ^ _zz_io_popOccupancy_4);
+  assign _zz_io_popOccupancy_4 = (popCC_pushPtrGray[5] ^ _zz_io_popOccupancy_5);
+  assign _zz_io_popOccupancy_5 = (popCC_pushPtrGray[6] ^ _zz_io_popOccupancy_6);
+  assign _zz_io_popOccupancy_6 = (popCC_pushPtrGray[7] ^ _zz_io_popOccupancy_7);
+  assign _zz_io_popOccupancy_7 = (popCC_pushPtrGray[8] ^ _zz_io_popOccupancy_8);
+  assign _zz_io_popOccupancy_8 = (popCC_pushPtrGray[9] ^ _zz_io_popOccupancy_9);
+  assign _zz_io_popOccupancy_9 = (popCC_pushPtrGray[10] ^ _zz_io_popOccupancy_10);
+  assign _zz_io_popOccupancy_10 = popCC_pushPtrGray[11];
+  assign io_popOccupancy = ({_zz_io_popOccupancy_10,{_zz_io_popOccupancy_9,{_zz_io_popOccupancy_8,{_zz_io_popOccupancy_7,{_zz_io_popOccupancy_6,{_zz_io_popOccupancy_5,{_zz_io_popOccupancy_4,{_zz_io_popOccupancy_3,{_zz_io_popOccupancy_2,{_zz_io_popOccupancy_11,_zz_io_popOccupancy_12}}}}}}}}}} - popCC_ptrToOccupancy);
+  assign pushToPopGray = pushCC_pushPtrGray;
+  assign popToPushGray = popCC_ptrToPush;
+  always @(posedge clk or posedge reset) begin
+    if(reset) begin
+      pushCC_pushPtr <= 12'h0;
+      pushCC_pushPtrGray <= 12'h0;
+    end else begin
+      if(io_push_fire) begin
+        pushCC_pushPtrGray <= (_zz_pushCC_pushPtrGray ^ pushCC_pushPtrPlus);
+      end
+      if(io_push_fire) begin
+        pushCC_pushPtr <= pushCC_pushPtrPlus;
+      end
+    end
+  end
+
+  always @(posedge io_pix_clk or posedge reset_synchronized) begin
+    if(reset_synchronized) begin
+      popCC_popPtr <= 12'h0;
+      popCC_addressGen_rValid <= 1'b0;
+      popCC_ptrToPush <= 12'h0;
+      popCC_ptrToOccupancy <= 12'h0;
+    end else begin
+      if(popCC_addressGen_fire) begin
+        popCC_popPtr <= popCC_popPtrPlus;
+      end
+      if(popCC_addressGen_ready) begin
+        popCC_addressGen_rValid <= popCC_addressGen_valid;
+      end
+      if(popCC_readArbitation_fire) begin
+        popCC_ptrToPush <= popCC_popPtrGray;
+      end
+      if(popCC_readArbitation_fire) begin
+        popCC_ptrToOccupancy <= popCC_popPtr;
+      end
+    end
+  end
+
+  always @(posedge io_pix_clk) begin
+    if(popCC_addressGen_ready) begin
+      popCC_addressGen_rData <= popCC_addressGen_payload;
+    end
   end
 
 
@@ -15745,6 +17299,78 @@ module BufferCC (
   always @(posedge clk) begin
     buffers_0 <= io_dataIn;
     buffers_1 <= buffers_0;
+  end
+
+
+endmodule
+
+module BufferCC_7 (
+  input  wire [11:0]   io_dataIn,
+  output wire [11:0]   io_dataOut,
+  input  wire          io_pix_clk,
+  input  wire          reset_synchronized
+);
+
+  (* async_reg = "true" , altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [11:0]   buffers_0;
+  (* async_reg = "true" *) reg        [11:0]   buffers_1;
+
+  assign io_dataOut = buffers_1;
+  always @(posedge io_pix_clk or posedge reset_synchronized) begin
+    if(reset_synchronized) begin
+      buffers_0 <= 12'h0;
+      buffers_1 <= 12'h0;
+    end else begin
+      buffers_0 <= io_dataIn;
+      buffers_1 <= buffers_0;
+    end
+  end
+
+
+endmodule
+
+module BufferCC_6 (
+  input  wire          io_dataIn,
+  output wire          io_dataOut,
+  input  wire          io_pix_clk,
+  input  wire          reset
+);
+
+  (* async_reg = "true" *) reg                 buffers_0;
+  (* async_reg = "true" *) reg                 buffers_1;
+
+  assign io_dataOut = buffers_1;
+  always @(posedge io_pix_clk or posedge reset) begin
+    if(reset) begin
+      buffers_0 <= 1'b1;
+      buffers_1 <= 1'b1;
+    end else begin
+      buffers_0 <= io_dataIn;
+      buffers_1 <= buffers_0;
+    end
+  end
+
+
+endmodule
+
+module BufferCC_5 (
+  input  wire [11:0]   io_dataIn,
+  output wire [11:0]   io_dataOut,
+  input  wire          clk,
+  input  wire          reset
+);
+
+  (* async_reg = "true" , altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [11:0]   buffers_0;
+  (* async_reg = "true" *) reg        [11:0]   buffers_1;
+
+  assign io_dataOut = buffers_1;
+  always @(posedge clk or posedge reset) begin
+    if(reset) begin
+      buffers_0 <= 12'h0;
+      buffers_1 <= 12'h0;
+    end else begin
+      buffers_0 <= io_dataIn;
+      buffers_1 <= buffers_0;
+    end
   end
 
 
