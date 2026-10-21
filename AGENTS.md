@@ -159,6 +159,14 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
   0x58000000); writing inside the blob corrupts the kernel image.
 - Hardware PLIC note: `plicInterrupts[i]` IS source ID i (io_sources =
   plicInterrupts>>1); bit0 must be 0 — soc.v packs {key=3,spi=2,uart=1}.
+- UART driver: `UPF_BOOT_AUTOCONF` makes serial core reset `port->type`
+  to PORT_UNKNOWN and expect `ops->config_port` to restore it —
+  `alvx_config_port` MUST set `p->type = PORT_ALVX` on UART_CONFIG_TYPE.
+  If it stays PORT_UNKNOWN, `uart_configure_port` skips
+  `register_console` + tty creation entirely: no "console [ttyALV0]
+  enabled", /dev/console open fails, /init gets EOF and the kernel
+  panics "Attempted to kill init". Symptom signature in the printk
+  ring: everything else (mmc/sd/init) works, only console is silent.
 - No misaligned access in HW: kernel uses RISCV_EMULATED_UNALIGNED_ACCESS.
 - Kernel MUST be rv32ima with no C extension: riscv defconfig selects
   EFI which selects RISCV_ISA_C — the fragment disables BOTH

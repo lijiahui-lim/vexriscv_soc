@@ -45,6 +45,7 @@
 #define DRIVER_NAME	"alvx-uart"
 #define DEVICE_NAME	"ttyALV"
 #define ALVX_UART_NR	1
+#define PORT_ALVX	112
 
 static struct uart_port alvx_port;
 static struct uart_port *alvx_console_port;
@@ -212,7 +213,11 @@ static int alvx_request_port(struct uart_port *p)
 	return 0;				/* membase mapped in probe */
 }
 
-static void alvx_config_port(struct uart_port *p, int flags) { }
+static void alvx_config_port(struct uart_port *p, int flags)
+{
+	if (flags & UART_CONFIG_TYPE)
+		p->type = PORT_ALVX;
+}
 
 static int alvx_verify_port(struct uart_port *p, struct serial_struct *s)
 {
