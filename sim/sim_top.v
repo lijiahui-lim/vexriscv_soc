@@ -19,7 +19,7 @@ module sim_top #(
     output wire [9:0] tmds0,
     output wire [9:0] tmds1,
     output wire [9:0] tmds2,
-    output wire [127:0] dbg
+    output wire [319:0] dbg
 );
 
 // soc ddr master port (fab domain, window-relative byte addr)

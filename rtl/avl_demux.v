@@ -76,18 +76,27 @@ wire        rd_block  = m_read && !rd_idle && (sel_id != rd_sid);
 wire [SW:0] cur_sid   = rd_idle ? sel_id : rd_sid;
 
 // ---- error slave ------------------------------------------------------
-reg err_busy = 1'b0;
-reg err_was_read;
+// An accepted read beat owes m_burstcount response beats: hold err_busy
+// until all are returned or rd_pend (which counts beats) never drains and
+// every later read to a real slave is blocked forever.
+reg        err_busy = 1'b0;
+reg        err_was_read;
+reg [7:0]  err_left = 8'd0;
 always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
         err_busy     <= 1'b0;
         err_was_read <= 1'b0;
+        err_left     <= 8'd0;
     end else begin
         if (!err_busy && (m_read || m_write) && !mapped && !m_waitrequest) begin
             err_busy     <= 1'b1;
             err_was_read <= m_read;
+            err_left     <= m_burstcount;
         end else if (err_busy) begin
-            err_busy <= 1'b0;            // 1-cycle service
+            if (err_was_read && (err_left > 8'd1))
+                err_left <= err_left - 8'd1;
+            else
+                err_busy <= 1'b0;
         end
     end
 end

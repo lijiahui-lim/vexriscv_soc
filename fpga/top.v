@@ -194,7 +194,7 @@ assign vid_rst_n = por_n & pll_meta[1];
 
 wire [5:0]  led_out;
 wire [31:0] ext1_out, ext2_out;
-wire [127:0] soc_dbg;
+wire [319:0] soc_dbg;
 wire        cpu_reset_req;
 
 soc #(.BOOT_HEX("boot.hex")) u_vex (
@@ -433,6 +433,13 @@ always @(*) begin
     8'd13: st_data = {27'd0, cpu_reset_req, fab_reset_n,
                       afi_reset_n, pll_locked, global_reset_n};
     8'd14: st_data = {28'd0, vid_st_sync1};    // {busy, underRun, enable}
+    8'd15: st_data = soc_dbg[159:128];         // pending dBus cmd address
+    8'd16: st_data = soc_dbg[191:160];         // pending iBus cmd address
+    8'd17: st_data = soc_dbg[223:192];         // {ib_stall, db_stall} cycles
+    8'd18: st_data = soc_dbg[255:224];         // {ib_pend,db_pend,ib_rd,ib_wrn,
+                                             //  db_rd,db_wr,db_wrn,db_rdv}
+    8'd19: st_data = soc_dbg[287:256];         // execute_INSTRUCTION
+    8'd20: st_data = soc_dbg[319:288];         // {fetchPc[31:16], halt reasons}
     8'd31: st_data = 32'hC0DE0005;
     default: st_data = 32'd0;
     endcase

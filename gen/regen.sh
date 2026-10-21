@@ -15,10 +15,26 @@ old_port = "  input  wire          debugReset\n);"
 assert s.count(old_port) >= 1, "debugReset port anchor not found"
 s = s.replace(old_port,
               "  input  wire          debugReset,\n"
-              "  output wire [31:0]   cpu_dbg\n);", 1)
+              "  output wire [95:0]   cpu_dbg\n);", 1)
 anchor = "  assign execute_BranchPlugin_eq"
 assert s.count(anchor) == 1, "cpu_dbg anchor not found"
 dbg = '''  assign cpu_dbg = {
+    /* [95:80] */ IBusCachedPlugin_fetchPc_pc[31:16],
+    /* [79]    */ execute_arbitration_haltItself,
+    /* [78]    */ when_DBusCachedPlugin_l395,
+    /* [77]    */ when_DBusCachedPlugin_l411,
+    /* [76]    */ dataCache_1_io_cpu_execute_haltIt,
+    /* [75]    */ io_cpu_flush_isStall,
+    /* [74]    */ when_CsrPlugin_l1519,
+    /* [73]    */ when_CsrPlugin_l1521,
+    /* [72]    */ execute_CsrPlugin_wfiWake,
+    /* [71]    */ execute_CsrPlugin_blockedBySideEffects,
+    /* [70]    */ dBus_cmd_valid,
+    /* [69]    */ dBus_cmd_ready,
+    /* [68]    */ dBus_rsp_valid,
+    /* [67]    */ CsrPlugin_inWfi,
+    /* [66:64] */ execute_ENV_CTRL,
+    /* [63:32] */ execute_INSTRUCTION,
     /* [31]    */ DebugPlugin_resetIt_regNext,
     /* [30]    */ DebugPlugin_haltIt,
     /* [29]    */ DebugPlugin_stepIt,

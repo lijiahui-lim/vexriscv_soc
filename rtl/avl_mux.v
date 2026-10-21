@@ -121,6 +121,16 @@ reg [RFIFO_AW:0] rwp = 0, rrp = 0;
 reg [BW-1:0]   rsp_left = 0;
 reg            rsp_busy = 0;                 // a fifo entry is being served
 
+// The entry that becomes the head after this pop is index rrp+1. It exists
+// when it precedes rwp *including* an entry being written this same cycle;
+// if it IS the entry being written now, its beat count is cur_bc (not yet
+// stored in rf_bc). Comparing against the pre-increment rwp drops that
+// corner case and wedges response routing for good.
+wire [RFIFO_AW:0] nxt_idx    = rrp + 1'b1;
+wire              nxt_exists = (nxt_idx != (rwp + {{RFIFO_AW{1'b0}}, m_accept_rd}));
+wire [BW-1:0]     nxt_bc     = (nxt_idx[RFIFO_AW-1:0] == rwp[RFIFO_AW-1:0]) ?
+                               cur_bc : rf_bc[nxt_idx[RFIFO_AW-1:0]];
+
 always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
         rwp <= 0; rrp <= 0; rsp_left <= 0; rsp_busy <= 0;
@@ -150,9 +160,9 @@ always @(posedge clk or negedge reset_n) begin
                     rsp_busy <= 0;
                     rrp      <= rrp + 1'b1;
                     // preload the next queued entry if present
-                    if (rwp != rrp + 1'b1) begin
+                    if (nxt_exists) begin
                         rsp_busy <= 1'b1;
-                        rsp_left <= rf_bc[rrp[RFIFO_AW-1:0] + 1'b1];
+                        rsp_left <= nxt_bc;
                     end
                 end
             end

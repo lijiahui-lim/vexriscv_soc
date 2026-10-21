@@ -60,11 +60,11 @@ module soc #(
     output wire        jtag_tdo,
     input  wire        jtag_trst_n,      // cpu debugReset (active low in)
     output wire        cpu_reset_out,    // debug module reset request
-    output wire [127:0] dbg              // cpu bus activity (fab_clk domain)
+    output wire [319:0] dbg              // cpu bus activity (fab_clk domain)
 );
 
 wire reset = ~reset_n;
-wire [31:0] chip_dbg;
+wire [95:0] chip_dbg;
 
 // ===========================================================================
 // cpu complex
@@ -463,11 +463,21 @@ assign ddr_address = dd_s_addr_full[29:0];
 reg [15:0] dbg_ib_acc = 0, dbg_ib_rdv = 0, dbg_db_acc = 0, dbg_db_rdv = 0;
 reg [31:0] dbg_ib_addr = 0;
 
+// pending command capture: latch the address while a cmd is presented but
+// not yet accepted (waitrequestn low). If the pipeline wedges on a bus
+// access, these hold the offending address + stall length.
+reg [31:0] dbg_ib_pend_addr = 0, dbg_db_pend_addr = 0;
+reg [15:0] dbg_ib_stall = 0, dbg_db_stall = 0;
+reg        dbg_ib_pend = 0, dbg_db_pend = 0;
+
 always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
         dbg_ib_acc <= 0; dbg_ib_rdv <= 0;
         dbg_db_acc <= 0; dbg_db_rdv <= 0;
         dbg_ib_addr <= 0;
+        dbg_ib_pend_addr <= 0; dbg_db_pend_addr <= 0;
+        dbg_ib_stall <= 0; dbg_db_stall <= 0;
+        dbg_ib_pend <= 0; dbg_db_pend <= 0;
     end else begin
         if (cpu_ibus_rd && cpu_ibus_wrn) begin
             dbg_ib_acc  <= dbg_ib_acc + 1'b1;
@@ -479,11 +489,37 @@ always @(posedge clk or negedge reset_n) begin
             dbg_ib_addr <= cpu_dbus_addr;
         end
         if (cpu_dbus_rdv) dbg_db_rdv <= dbg_db_rdv + 1'b1;
+        if (cpu_ibus_rd && !cpu_ibus_wrn) begin
+            dbg_ib_pend      <= 1'b1;
+            dbg_ib_pend_addr <= cpu_ibus_addr;
+            dbg_ib_stall     <= dbg_ib_stall + 1'b1;
+        end else begin
+            dbg_ib_pend  <= 1'b0;
+            dbg_ib_stall <= 16'd0;
+        end
+        if ((cpu_dbus_rd || cpu_dbus_wr) && !cpu_dbus_wrn) begin
+            dbg_db_pend      <= 1'b1;
+            dbg_db_pend_addr <= cpu_dbus_addr;
+            dbg_db_stall     <= dbg_db_stall + 1'b1;
+        end else begin
+            dbg_db_pend  <= 1'b0;
+            dbg_db_stall <= 16'd0;
+        end
     end
 end
 
 assign dbg = {
-    /* [127:96]  */ chip_dbg,
+    /* [319:288] */ chip_dbg[95:64],        // fetchPc[31:16] + halt reasons
+    /* [287:256] */ chip_dbg[63:32],        // execute_INSTRUCTION
+    /* [255:224] */ {24'd0,
+                      dbg_ib_pend, dbg_db_pend,
+                      cpu_ibus_rd, cpu_ibus_wrn,
+                      cpu_dbus_rd, cpu_dbus_wr,
+                      cpu_dbus_wrn, cpu_dbus_rdv},
+    /* [223:192] */ {dbg_ib_stall, dbg_db_stall},
+    /* [191:160] */ dbg_ib_pend_addr,
+    /* [159:128] */ dbg_db_pend_addr,
+    /* [127:96]  */ chip_dbg[31:0],
     /* [95:64]   */ dbg_ib_addr,
     /* [63:48]   */ dbg_db_rdv,
     /* [47:32]   */ dbg_db_acc,

@@ -119,16 +119,17 @@ int main(int argc, char **argv) {
                    __PVT__u_apb__DOT__uart__DOT__bridge_uartConfigReg_clockDivider + 1)
                   * 8 * 16;
 
-        // MMIO trace: log every accepted dBus command to non-DDR space
+        // MMIO trace: log every accepted dBus command to non-DDR space.
+        // Probe at the dcache io_mem_cmd issue point (pre-Avalon adapter)
+        // so uncached peripheral accesses show even when buffered.
         if (getenv("MMIO_TRACE") && clk_edge) {
             Vsim_top_AlvxChip *c = top->sim_top->u_soc->u_chip;
-            bool acc = (c->__PVT__dBusAvalon_read || c->__PVT__dBusAvalon_write)
-                       && c->__PVT__dBusAvalon_waitRequestn;
-            if (acc && (c->__PVT__dBusAvalon_address & 0x80000000u)) {
+            uint32_t a = c->__PVT__io_mem_cmd_s2mPipe_rData_address;
+            if (c->__PVT__io_mem_cmd_s2mPipe_rValid && (a & 0x80000000u)
+                && (a & 0xFFFFF000u) != 0xF1004000u) {   // skip uart noise
                 printf("[mmio] %c %08x @pc=%08x t=%llu\n",
-                       c->__PVT__dBusAvalon_write ? 'W' : 'R',
-                       c->__PVT__dBusAvalon_address,
-                       c->__PVT__IBusCachedPlugin_fetchPc_pc,
+                       c->__PVT__io_mem_cmd_s2mPipe_rData_wr ? 'W' : 'R',
+                       a, c->__PVT__IBusCachedPlugin_fetchPc_pc,
                        (unsigned long long)sim_time);
             }
         }
@@ -179,8 +180,14 @@ int main(int argc, char **argv) {
                 last_move = sim_time;
                 last_pc = pc; last_ibacc = ibacc;
             } else if (sim_time - last_move > stall_ticks) {
-                printf("\n[stall] fetchPc frozen at 0x%04x, dbg=%08x %08x %08x %08x\n",
-                       pc, top->dbg[3], top->dbg[2], top->dbg[1], top->dbg[0]);
+                printf("\n[stall] fetchPc frozen at 0x%04x\n", pc);
+                printf("  dbg[9:0]=%08x %08x %08x %08x %08x %08x %08x %08x %08x %08x\n",
+                       top->dbg[9], top->dbg[8], top->dbg[7], top->dbg[6],
+                       top->dbg[5], top->dbg[4], top->dbg[3], top->dbg[2],
+                       top->dbg[1], top->dbg[0]);
+                printf("  exec_instr=0x%08x pc_hi=0x%04x pend: db@0x%08x ib@0x%08x\n",
+                       top->dbg[8], (top->dbg[9]>>16)&0xFFFF,
+                       top->dbg[4], top->dbg[5]);
                 dump_cpu(top);
                 stalled = true;
                 break;

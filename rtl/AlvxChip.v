@@ -102,7 +102,7 @@ module AlvxChip (
   input  wire          clk,
   input  wire          reset,
   input  wire          debugReset,
-  output wire [31:0]   cpu_dbg
+  output wire [95:0]   cpu_dbg
 );
   localparam ShiftCtrlEnum_DISABLE_1 = 2'd0;
   localparam ShiftCtrlEnum_SLL_1 = 2'd1;
@@ -5650,6 +5650,22 @@ module AlvxChip (
   assign debug_resetOut = DebugPlugin_resetIt_regNext;
   assign when_DebugPlugin_l344 = (DebugPlugin_haltIt || DebugPlugin_stepIt);
   assign cpu_dbg = {
+    /* [95:80] */ IBusCachedPlugin_fetchPc_pc[31:16],
+    /* [79]    */ execute_arbitration_haltItself,
+    /* [78]    */ when_DBusCachedPlugin_l395,
+    /* [77]    */ when_DBusCachedPlugin_l411,
+    /* [76]    */ dataCache_1_io_cpu_execute_haltIt,
+    /* [75]    */ io_cpu_flush_isStall,
+    /* [74]    */ when_CsrPlugin_l1519,
+    /* [73]    */ when_CsrPlugin_l1521,
+    /* [72]    */ execute_CsrPlugin_wfiWake,
+    /* [71]    */ execute_CsrPlugin_blockedBySideEffects,
+    /* [70]    */ dBus_cmd_valid,
+    /* [69]    */ dBus_cmd_ready,
+    /* [68]    */ dBus_rsp_valid,
+    /* [67]    */ CsrPlugin_inWfi,
+    /* [66:64] */ execute_ENV_CTRL,
+    /* [63:32] */ execute_INSTRUCTION,
     /* [31]    */ DebugPlugin_resetIt_regNext,
     /* [30]    */ DebugPlugin_haltIt,
     /* [29]    */ DebugPlugin_stepIt,
@@ -5667,6 +5683,7 @@ module AlvxChip (
     /* [17]    */ memory_arbitration_isValid,
     /* [16]    */ writeBack_arbitration_isValid,
     /* [15:0]  */ IBusCachedPlugin_fetchPc_pc[15:0]
+
   };
   assign execute_BranchPlugin_eq = (execute_SRC1 == execute_SRC2);
   assign switch_Misc_l245_1 = execute_INSTRUCTION[14 : 12];
