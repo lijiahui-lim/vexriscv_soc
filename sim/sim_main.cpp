@@ -41,9 +41,9 @@ int main(int argc, char **argv) {
     }
     top->reset_n = 1;
 
-    // uart decode: fixed bit period (uart clockDivider N -> bit = N clk
-    // periods = N*16 sim ticks). Sample at 1.5*T after the falling edge.
-    vluint64_t BIT = 1152;                 // divider 8+1 * 8 samples * 16
+    // uart decode: bit = (divider+1)*8 clk periods = *16 sim ticks.
+    // divider 135 -> bit 1088 clk = 17408 ticks (~114890 baud @125MHz).
+    vluint64_t BIT = 17408;                // divider 135+1 * 8 * 16
     if (getenv("UART_BIT_TICKS")) BIT = strtoull(getenv("UART_BIT_TICKS"),0,0);
     int ustate = 0;                        // 0=idle,1=receiving
     vluint64_t edge_t = 0;

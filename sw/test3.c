@@ -20,7 +20,7 @@
 
 static void uart_init(void)
 {
-    REG32(UART + 0x08) = 8;
+    REG32(UART + 0x08) = 135;  /* bit=(div+1)*8clk: 125e6/(136*8)=114890bd ~115200 */
     REG32(UART + 0x0C) = 0x7;
 }
 static void uart_putc(char c)

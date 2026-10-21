@@ -14,7 +14,7 @@
 static void uart_init(void)
 {
     /* clock divider: clk cycles per bit. Use small value for sim speed. */
-    REG32(UART + 0x08) = 8;
+    REG32(UART + 0x08) = 135;  /* bit=(div+1)*8clk: 125e6/(136*8)=114890bd ~115200 */
     /* frame config: dataLength=7 (8 bits), parity=none, stop=1 */
     REG32(UART + 0x0C) = 0x7;
 }

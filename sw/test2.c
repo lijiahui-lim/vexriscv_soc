@@ -56,7 +56,7 @@ void main(void)
     volatile uint32_t *pt = (volatile uint32_t *)PT;
     uint32_t i;
 
-    REG32(UART + 0x08) = 8;
+    REG32(UART + 0x08) = 135;  /* bit=(div+1)*8clk: 125e6/(136*8)=114890bd ~115200 */
     REG32(UART + 0x0C) = 0x7;
     uart_puts("test2 sv32\n");
 

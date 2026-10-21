@@ -14,7 +14,7 @@ int main(void)
     d[0] = 0xDEAD0001u;               /* stage1: reached main, before any APB  */
     d[1] = 0xDEAD0002u;
 
-    REG32(UART + 0x08) = 8;           /* clockDivider                        */
+    REG32(UART + 0x08) = 135;  /* bit=(div+1)*8clk: 125e6/(136*8)=114890bd ~115200 */
     d[2] = 0xDEAD0003u;               /* stage2: first APB write survived    */
     REG32(UART + 0x0C) = 0x000F0103;
     REG32(UART + 0x04) = 0x00000000;

@@ -27,7 +27,7 @@
 
 static void uart_init(void)
 {
-    REG32(UART + 0x08) = 8;
+    REG32(UART + 0x08) = 135;  /* bit=(div+1)*8clk: 125e6/(136*8)=114890bd ~115200 */
     REG32(UART + 0x0C) = 0x7;
 }
 static void uart_putc(char c)
@@ -166,8 +166,14 @@ int main(void)
     uart_puts("\nboot_linux\n");
     sc[0] = 0xB0070001;
 
-    /* black framebuffer + start the generated video pipeline */
-    for (i = 0; i < (1280u * 720); i++)
+    /* black framebuffer + start the generated video pipeline.
+     * Full 3.5 MiB clear is fine on HW (~ms); in sim it would blow the
+     * tick budget, so only paint a few lines there. */
+    uint32_t fbw = 1280u * 720;
+#ifdef BOOT_SIM
+    fbw = 1280u * 8;
+#endif
+    for (i = 0; i < fbw; i++)
         ((volatile uint32_t *)FB)[i] = 0;
     REG32(VID + 0x00) = (FB - DDR) / 32;
     REG32(VID + 0x04) = (720u * 1280) / 8 - 1;

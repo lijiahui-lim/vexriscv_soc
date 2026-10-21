@@ -24,7 +24,7 @@ new handwritten CPU fabric.
   `test3` (SD SPI init+MBR + video fb color bars; `test3s` =
   FB_ROWS=16 for sim). `make sim`/`sim2`/`sim3` under Verilator.
 - `sim/` — `sim_top.v` (soc→cdc→avlbr→sim_emif), `sim_emif.v` (192-bit UniPHY
-  model), `sim_main.cpp` (clock gen + UART decode at 1152 ticks/bit, writes
+  model), `sim_main.cpp` (clock gen + UART decode at 17408 ticks/bit (div=135 ~115200bd), writes
   `uart.log`; `SIM_STOP=DONE` halts on string, `UART_HEX=1` dumps bytes).
 - `fpga/` — Quartus project: `top.v`, `make_emif.tcl` (emifsys.qsys =
   EMIF+rst_soft+jtagm+jtagm2+dbg_ram only, MEM_CLK **300** MHz → afi_clk
@@ -55,8 +55,11 @@ enable} exported for the JTAG mailbox. Board side only needs the
 ## Simulation (local, /opt/oss-cad-suite Verilator 5.049)
 
 - `make sim` — test1; `make sim2` — MMU test. Both print `DONE` on pass.
-- UART: 8N1, divider 8 → bit period = (8+1)*8clk = 1152 sim ticks
-  (UART_BIT_TICKS env).
+- UART: 8N1, divider 135 → bit period = (135+1)*8clk = 17408 sim ticks
+  ≈114890 baud @125MHz (UART_BIT_TICKS env). CLOCK_DIVIDER reg is NOT
+  clk/baud: bit = (div+1)*8 uartclk → div = uartclk/(baud*8) − 1. The
+  kernel driver + boot code all use this formula (divider 8 gave
+  ~1.736 Mbaud — that was the "garbage on ttyUSB1" bug).
 - UART status [20:16] = TX FIFO *free slots* — poll `while ==0`.
 - Do NOT use the VM for sim (no ModelSim installed); VM is build-only.
 

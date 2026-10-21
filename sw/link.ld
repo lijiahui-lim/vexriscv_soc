@@ -7,6 +7,8 @@ SECTIONS
     .text : { *(.text.init) *(.text) *(.text.*) }
     .rodata : { *(.rodata) *(.rodata.*) *(.srodata) *(.srodata.*) }
     .data : { *(.data) *(.data.*) *(.sdata) *(.sdata.*) }
+    . = ALIGN(8);
+    _bss_start = .;
     .bss : { *(.bss) *(.bss.*) *(.sbss) *(.sbss.*) *(COMMON) }
     . = ALIGN(8);
     _end = .;

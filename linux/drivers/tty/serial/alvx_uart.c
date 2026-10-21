@@ -7,7 +7,7 @@
  *   0x04 STATUS R/W: bit0 tx-empty-irq-en, bit1 rx-irq-en;
  *              R: bit8 tx-int pending, bit9 rx-int pending, bit15 tx fifo busy,
  *                 [23:16] tx free entries, [31:24] rx occupancy
- *   0x08 CLOCK_DIVIDER  (uartclk / baud)
+ *   0x08 CLOCK_DIVIDER  (uartclk / (baud*8)) - 1
  *   0x0C FRAME_CONFIG   [2:0] dataLength-1, [9:8] parity (0=none,1=even,2=odd),
  *                       [16] stop (0=one,1=two)
  *   0x10 MISC     bit0 read err (W1C), bit1 rx overflow (W1C),
@@ -191,11 +191,12 @@ static void alvx_set_termios(struct uart_port *p, struct ktermios *termios,
 		frame |= ((termios->c_cflag & PARODD) ? 2 : 1) << 8;
 
 	baud = uart_get_baud_rate(p, termios, old, 0,
-				  p->uartclk ? p->uartclk / 16 : 9600);
+				  p->uartclk ? p->uartclk / 8 : 9600);
 	alvx_write(p, OFF_FRAME, frame);
+	/* Apb3UartCtrl: bit period = (divider+1) * 8 uartclk cycles */
 	if (baud && p->uartclk)
 		alvx_write(p, OFF_DIV,
-			   DIV_ROUND_CLOSEST(p->uartclk, baud));
+			   DIV_ROUND_CLOSEST(p->uartclk, baud * 8) - 1);
 	uart_update_timeout(p, termios->c_cflag, baud);
 }
 

@@ -46,6 +46,13 @@ sw/bootl.hex: sw/boot_linux.elf
 	$(OBJCOPY) -O binary $< sw/boot_linux.bin
 	python3 sw/bin2hex.py sw/boot_linux.bin $@
 
+sw/bootl_sim.elf: sw/crt0.S sw/boot_linux.c sw/link.ld
+	$(CC) $(CFLAGS) -DBOOT_SIM -march=rv32ima_zicsr_zifencei -T sw/link.ld sw/crt0.S sw/boot_linux.c -o $@
+
+sw/bootls.hex: sw/bootl_sim.elf
+	$(OBJCOPY) -O binary $< sw/bootl_sim.bin
+	python3 sw/bin2hex.py sw/bootl_sim.bin $@
+
 # ---- verilator sim -------------------------------------------------------
 obj_dir/Vsim_top: sim/sim_top.v sim/sim_main.cpp $(RTL) sim/sim_emif.v
 	$(VERILATOR) --cc --exe --build -O2 -Wno-fatal --trace --top-module sim_top \
@@ -67,6 +74,11 @@ sim3: sw/boot3s.hex
 	rm -rf obj_dir
 	$(MAKE) obj_dir/Vsim_top BOOT_HEX=sw/boot3s.hex
 	SIM_STOP=DONE obj_dir/Vsim_top
+
+siml: sw/bootls.hex
+	rm -rf obj_dir
+	$(MAKE) obj_dir/Vsim_top BOOT_HEX=sw/bootls.hex
+	SIM_STOP="jtag magic" obj_dir/Vsim_top
 
 clean:
 	rm -rf obj_dir sw/*.elf sw/*.bin sw/boot.hex
