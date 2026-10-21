@@ -110,7 +110,10 @@ object AlvxGen {
             earlyBranch = false,
             catchAddressMisaligned = true
           ),
-          new CsrPlugin(CsrPluginConfig.openSbi(mhartid = 0, misa = Riscv.misaToInt(s"ima")).copy(utimeAccess = CsrAccess.READ_ONLY)),
+          // misa needs 's' — OpenSBI's sbi_init gates the coldboot lottery on
+          // misa_extension('S') when next_mode=PRV_S; without it the hart takes
+          // the warmboot path and waits forever for a coldboot_done nobody sets.
+          new CsrPlugin(CsrPluginConfig.openSbi(mhartid = 0, misa = Riscv.misaToInt(s"imas")).copy(utimeAccess = CsrAccess.READ_ONLY)),
           // RV32 OpenSBI >= 1.6 clears MSTATUSH_MDT unconditionally in its
           // boot/trap paths; without this CSR those writes trap and the hart
           // parks in _start_hang. readOnly=false (a read-only mstatush only

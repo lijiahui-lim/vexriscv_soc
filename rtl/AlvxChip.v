@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.13.0    git head : d9d72474863badf47d8585d187f3e04ae4749c59
 // Component : AlvxChip
-// Git hash  : 041b0b9b0720eebc5ac3ac7d61b6020e366f8428
+// Git hash  : 1b04095333f0298d016df04bd53e7c0d3b7a8e1e
 
 `timescale 1ns/1ps
 
@@ -5886,7 +5886,7 @@ module AlvxChip (
   end
 
   assign CsrPlugin_misa_base = 2'b01;
-  assign CsrPlugin_misa_extensions = 26'h0001101;
+  assign CsrPlugin_misa_extensions = 26'h0041101;
   assign CsrPlugin_mcounteren_IR = 1'b1;
   assign CsrPlugin_mcounteren_CY = 1'b1;
   assign CsrPlugin_scounteren_IR = 1'b1;
