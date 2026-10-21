@@ -111,6 +111,11 @@ object AlvxGen {
             catchAddressMisaligned = true
           ),
           new CsrPlugin(CsrPluginConfig.openSbi(mhartid = 0, misa = Riscv.misaToInt(s"ima")).copy(utimeAccess = CsrAccess.READ_ONLY)),
+          // RV32 OpenSBI >= 1.6 clears MSTATUSH_MDT unconditionally in its
+          // boot/trap paths; without this CSR those writes trap and the hart
+          // parks in _start_hang. readOnly=false (a read-only mstatush only
+          // "works" by accident of opcode decoding).
+          new MstatushPlugin(readOnly = false),
           new YamlPlugin("cpu0.yaml")
         )
       )
