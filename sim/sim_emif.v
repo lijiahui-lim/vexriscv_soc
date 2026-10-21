@@ -31,6 +31,10 @@ initial begin
     if (DDR_HEX != "") begin : load
         reg [31:0] flat [0:6*WORDS-1];
         integer i;
+        for (i = 0; i < 6*WORDS; i = i + 1)
+            flat[i] = 32'h0;
+        for (i = 0; i < WORDS; i = i + 1)
+            mem[i] = {192{1'b0}};
         $readmemh(DDR_HEX, flat);
         for (i = 0; i < WORDS; i = i + 1)
             mem[i] = {flat[i*6+5], flat[i*6+4], flat[i*6+3],

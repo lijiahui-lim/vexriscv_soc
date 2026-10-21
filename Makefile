@@ -57,10 +57,25 @@ sw/bootls.hex: sw/bootl_sim.elf
 obj_dir/Vsim_top: sim/sim_top.v sim/sim_main.cpp $(RTL) sim/sim_emif.v
 	$(VERILATOR) --cc --exe --build -O2 -Wno-fatal --trace --top-module sim_top \
 	    -GBOOT_HEX='"$(BOOT_HEX)"' \
+	    -GDDR_WORDS=$(DDR_WORDS) \
+	    -GDDR_HEX='"$(DDR_HEX)"' \
 	    -o Vsim_top \
 	    $(RTL) sim/sim_emif.v sim/sim_top.v sim/sim_main.cpp
 
 BOOT_HEX ?= sw/boot.hex
+DDR_WORDS ?= 65536
+DDR_HEX ?=
+
+# full-window linux boot sim: 768MB DDR model + preloaded fw_payload.
+# BOOT_SIM bootloader skips SD/JTAG and jumps straight to 0x40000000.
+linux/out/fw_payload.hex: linux/out/fw_payload.bin
+	python3 -c "import struct; d=open('$<','rb').read(); f=open('$@','w'); [f.write('%08x\n' % struct.unpack_from('<I',d,i)[0]) for i in range(0,len(d),4)]"
+
+simlinux: sw/bootls.hex linux/out/fw_payload.hex
+	rm -rf obj_dir
+	$(MAKE) obj_dir/Vsim_top BOOT_HEX=sw/bootls.hex \
+	    DDR_WORDS=33554432 DDR_HEX=$(CURDIR)/linux/out/fw_payload.hex
+	SIM_STALL=4000000 SIM_TICKS=2000000000 obj_dir/Vsim_top
 
 sim: sw/boot.hex obj_dir/Vsim_top
 	SIM_STOP=DONE obj_dir/Vsim_top

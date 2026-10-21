@@ -2,7 +2,9 @@
 //   fab_clk 125MHz -> soc -> avl_cdc -> afi_clk 200MHz -> avlbr -> sim_emif
 // C++ harness drives clk edges and samples uart_txd.
 module sim_top #(
-    parameter BOOT_HEX = ""
+    parameter BOOT_HEX = "",
+    parameter DDR_WORDS = 65536,
+    parameter DDR_HEX = ""
 )(
     input  wire clk,          // fab clock (125 MHz nominal)
     input  wire afi_clk,      // emif clock (200 MHz nominal)
@@ -16,7 +18,8 @@ module sim_top #(
 
     output wire [9:0] tmds0,
     output wire [9:0] tmds1,
-    output wire [9:0] tmds2
+    output wire [9:0] tmds2,
+    output wire [127:0] dbg
 );
 
 // soc ddr master port (fab domain, window-relative byte addr)
@@ -51,7 +54,8 @@ soc #(.BOOT_HEX(BOOT_HEX)) u_soc (
     .sd_sclk(), .sd_mosi(), .sd_miso(1'b1), .sd_ncs(),
     .jtag_tck(1'b0), .jtag_tms(1'b1), .jtag_tdi(1'b1),
     .jtag_tdo(), .jtag_trst_n(1'b1),
-    .cpu_reset_out()
+    .cpu_reset_out(),
+    .dbg(dbg)
 );
 
 // ---- cdc: fab -> afi --------------------------------------------------
@@ -116,7 +120,7 @@ ddr_avl_bridge u_avlbr (
     .dbg()
 );
 
-sim_emif #(.WORDS(65536), .RD_LATENCY(8)) u_emif (
+sim_emif #(.WORDS(DDR_WORDS), .RD_LATENCY(8), .DDR_HEX(DDR_HEX)) u_emif (
     .clk(afi_clk), .reset_n(reset_n),
     .mavl_address   (mavl_addr),
     .mavl_burstcount(mavl_bc),

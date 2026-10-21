@@ -27,7 +27,13 @@
 
 static void uart_init(void)
 {
+#ifdef BOOT_SIM
+    /* sim only: bit=(8+1)*8clk=72clk — 15x faster decode; opensbi leaves
+     * the divider alone, the kernel console driver reprograms 135 later. */
+    REG32(UART + 0x08) = 8;
+#else
     REG32(UART + 0x08) = 135;  /* bit=(div+1)*8clk: 125e6/(136*8)=114890bd ~115200 */
+#endif
     REG32(UART + 0x0C) = 0x7;
 }
 static void uart_putc(char c)
@@ -181,6 +187,12 @@ int main(void)
     sc[1] = REG32(VID + 0x0C);
     uart_puts("video on\n");
 
+#ifdef BOOT_SIM
+    /* sim: DDR is preloaded by the testbench — skip SD + JTAG wait. */
+    uart_puts("sim: jump to preloaded payload\n");
+    sc[0] = 0xB0070003;
+    jump_to_ddr();
+#endif
     /* --- try SD ------------------------------------------------------ */
     if (sd_init() == 0) {
         uint8_t hdr[512];
