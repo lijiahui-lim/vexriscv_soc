@@ -1,0 +1,688 @@
+# AL156A (NVIDIA G-Sync module) Nios II SoC
+# Quartus Prime Standard 18.1
+# DDR3 pinout identical to ddr3_test; peripherals identical to AL156A/all_test
+
+set_global_assignment -name FAMILY "Arria V"
+set_global_assignment -name DEVICE 5AGXMA3D4F31I3
+set_global_assignment -name TOP_LEVEL_ENTITY top
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+
+set_global_assignment -name VERILOG_FILE top.v
+set_global_assignment -name VERILOG_FILE rtl/AlvxChip.v
+set_global_assignment -name VERILOG_FILE rtl/soc.v
+set_global_assignment -name VERILOG_FILE rtl/avl_demux.v
+set_global_assignment -name VERILOG_FILE rtl/avl_mux.v
+set_global_assignment -name VERILOG_FILE rtl/avl_cdc.v
+set_global_assignment -name VERILOG_FILE rtl/avl2axil.v
+set_global_assignment -name VERILOG_FILE rtl/avl2apb.v
+set_global_assignment -name VERILOG_FILE rtl/boot_ram.v
+set_global_assignment -name VERILOG_FILE rtl/ddr_avl_bridge.v
+set_global_assignment -name VERILOG_FILE rtl/fb_reader.v
+set_global_assignment -name VERILOG_FILE src/hdmi/fb_video.v
+set_global_assignment -name VERILOG_FILE src/hdmi/dvi_encoder.v
+set_global_assignment -name VERILOG_FILE src/hdmi/dvi_transmitter_top.v
+set_global_assignment -name VERILOG_FILE src/hdmi/serializer_10_to_1.v
+set_global_assignment -name QIP_FILE src/ddio/ddio_out.qip
+set_global_assignment -name QIP_FILE ip/synth/synthesis/emifsys.qip
+set_global_assignment -name QIP_FILE ip/synth/synthesis/vidpll.qip
+set_global_assignment -name SDC_FILE vex_soc.sdc
+# generated Spinal code guards sim-only code ($urandom, $display, string regs)
+# behind `ifndef SYNTHESIS
+set_global_assignment -name VERILOG_MACRO SYNTHESIS
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP "-40"
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 100
+set_global_assignment -name FITTER_EFFORT "STANDARD FIT"
+
+# ---- board clock ----
+set_location_assignment PIN_T4 -to i_sys_clk
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to i_sys_clk
+
+# ---- peripherals (same as AL156A/all_test) ----
+set_location_assignment PIN_A27 -to led_g
+set_location_assignment PIN_A26 -to led_r
+set_location_assignment PIN_AD18 -to i_key[0]
+set_location_assignment PIN_AC18 -to i_key[1]
+set_location_assignment PIN_AG16 -to i_key[2]
+set_location_assignment PIN_AF16 -to i_key[3]
+set_location_assignment PIN_AB18 -to o_led[0]
+set_location_assignment PIN_AA18 -to o_led[1]
+set_location_assignment PIN_AD16 -to o_led[2]
+set_location_assignment PIN_AC16 -to o_led[3]
+set_location_assignment PIN_K24 -to i_uart_rx
+set_location_assignment PIN_J23 -to o_uart_tx
+set_location_assignment PIN_AA11 -to o_sd_ncs
+set_location_assignment PIN_AG10 -to o_sd_mosi
+set_location_assignment PIN_AD11 -to o_sd_dclk
+set_location_assignment PIN_AF10 -to i_sd_miso
+set_location_assignment PIN_D16 -to o_hdmi_clk_p
+set_location_assignment PIN_E16 -to o_hdmi_clk_n
+set_location_assignment PIN_E19 -to o_hdmi_d_n[2]
+set_location_assignment PIN_D19 -to o_hdmi_d_p[2]
+set_location_assignment PIN_G17 -to o_hdmi_d_n[1]
+set_location_assignment PIN_F17 -to o_hdmi_d_p[1]
+set_location_assignment PIN_C17 -to o_hdmi_d_p[0]
+set_location_assignment PIN_D17 -to o_hdmi_d_n[0]
+set_location_assignment PIN_AD19 -to o_exter_io1[0]
+set_location_assignment PIN_AD12 -to o_exter_io1[1]
+set_location_assignment PIN_AC19 -to o_exter_io1[2]
+set_location_assignment PIN_AC13 -to o_exter_io1[3]
+set_location_assignment PIN_AB19 -to o_exter_io1[4]
+set_location_assignment PIN_Y13 -to o_exter_io1[5]
+set_location_assignment PIN_AA19 -to o_exter_io1[6]
+set_location_assignment PIN_Y12 -to o_exter_io1[7]
+set_location_assignment PIN_AK19 -to o_exter_io1[8]
+set_location_assignment PIN_AB13 -to o_exter_io1[9]
+set_location_assignment PIN_AJ19 -to o_exter_io1[10]
+set_location_assignment PIN_AA13 -to o_exter_io1[11]
+set_location_assignment PIN_AE20 -to o_exter_io1[12]
+set_location_assignment PIN_AK12 -to o_exter_io1[13]
+set_location_assignment PIN_AD20 -to o_exter_io1[14]
+set_location_assignment PIN_AJ12 -to o_exter_io1[15]
+set_location_assignment PIN_AE22 -to o_exter_io1[16]
+set_location_assignment PIN_AH14 -to o_exter_io1[17]
+set_location_assignment PIN_AD21 -to o_exter_io1[18]
+set_location_assignment PIN_AG14 -to o_exter_io1[19]
+set_location_assignment PIN_AD22 -to o_exter_io1[20]
+set_location_assignment PIN_AF15 -to o_exter_io1[21]
+set_location_assignment PIN_AC22 -to o_exter_io1[22]
+set_location_assignment PIN_AE15 -to o_exter_io1[23]
+set_location_assignment PIN_AB20 -to o_exter_io1[24]
+set_location_assignment PIN_AD15 -to o_exter_io1[25]
+set_location_assignment PIN_AA20 -to o_exter_io1[26]
+set_location_assignment PIN_AC15 -to o_exter_io1[27]
+set_location_assignment PIN_AC21 -to o_exter_io1[28]
+set_location_assignment PIN_AB16 -to o_exter_io1[29]
+set_location_assignment PIN_AB21 -to o_exter_io1[30]
+set_location_assignment PIN_AA16 -to o_exter_io1[31]
+set_location_assignment PIN_AH25 -to o_exter_io1[32]
+set_location_assignment PIN_AB14 -to o_exter_io1[33]
+set_location_assignment PIN_E15 -to o_exter_io2[0]
+set_location_assignment PIN_K23 -to o_exter_io2[1]
+set_location_assignment PIN_F14 -to o_exter_io2[2]
+set_location_assignment PIN_J19 -to o_exter_io2[3]
+set_location_assignment PIN_G14 -to o_exter_io2[4]
+set_location_assignment PIN_K19 -to o_exter_io2[5]
+set_location_assignment PIN_E13 -to o_exter_io2[6]
+set_location_assignment PIN_G21 -to o_exter_io2[7]
+set_location_assignment PIN_F13 -to o_exter_io2[8]
+set_location_assignment PIN_H21 -to o_exter_io2[9]
+set_location_assignment PIN_D12 -to o_exter_io2[10]
+set_location_assignment PIN_G22 -to o_exter_io2[11]
+set_location_assignment PIN_E12 -to o_exter_io2[12]
+set_location_assignment PIN_H22 -to o_exter_io2[13]
+set_location_assignment PIN_G12 -to o_exter_io2[14]
+set_location_assignment PIN_G19 -to o_exter_io2[15]
+set_location_assignment PIN_H12 -to o_exter_io2[16]
+set_location_assignment PIN_H19 -to o_exter_io2[17]
+set_location_assignment PIN_E10 -to o_exter_io2[18]
+set_location_assignment PIN_F20 -to o_exter_io2[19]
+set_location_assignment PIN_F10 -to o_exter_io2[20]
+set_location_assignment PIN_F21 -to o_exter_io2[21]
+set_location_assignment PIN_F11 -to o_exter_io2[22]
+set_location_assignment PIN_D21 -to o_exter_io2[23]
+set_location_assignment PIN_G11 -to o_exter_io2[24]
+set_location_assignment PIN_E21 -to o_exter_io2[25]
+set_location_assignment PIN_G10 -to o_exter_io2[26]
+set_location_assignment PIN_G18 -to o_exter_io2[27]
+set_location_assignment PIN_H10 -to o_exter_io2[28]
+set_location_assignment PIN_H18 -to o_exter_io2[29]
+set_location_assignment PIN_J10 -to o_exter_io2[30]
+set_location_assignment PIN_K10 -to o_exter_io2[31]
+set_location_assignment PIN_G24 -to o_exter_io2[32]
+set_location_assignment PIN_J25 -to o_exter_io2[33]
+# =========================================================================
+# DDR3 memory pins (identical to ddr3_test)
+# =========================================================================
+# set_location_assignment PIN_XXX -to oct_rzqin
+set_location_assignment PIN_J6  -to mem_a[0]
+set_location_assignment PIN_F4  -to mem_a[1]
+set_location_assignment PIN_L6  -to mem_a[2]
+set_location_assignment PIN_N8  -to mem_a[3]
+set_location_assignment PIN_D6  -to mem_a[4]
+set_location_assignment PIN_P4  -to mem_a[5]
+set_location_assignment PIN_D5  -to mem_a[6]
+set_location_assignment PIN_M6  -to mem_a[7]
+set_location_assignment PIN_E6  -to mem_a[8]
+set_location_assignment PIN_M7  -to mem_a[9]
+set_location_assignment PIN_G6  -to mem_a[10]
+set_location_assignment PIN_E4  -to mem_a[11]
+set_location_assignment PIN_B6  -to mem_a[12]
+set_location_assignment PIN_L4  -to mem_a[13]
+set_location_assignment PIN_N9  -to mem_ba[0]
+set_location_assignment PIN_C5  -to mem_ba[1]
+set_location_assignment PIN_J3  -to mem_ba[2]
+set_location_assignment PIN_Y9  -to mem_ck[0]
+set_location_assignment PIN_W9  -to mem_ck_n[0]
+set_location_assignment PIN_A4  -to mem_cke[0]
+set_location_assignment PIN_R10 -to mem_cs_n[0]
+set_location_assignment PIN_T7  -to mem_odt[0]
+set_location_assignment PIN_H6  -to mem_ras_n[0]
+set_location_assignment PIN_H7  -to mem_cas_n[0]
+set_location_assignment PIN_J4  -to mem_we_n[0]
+set_location_assignment PIN_N2  -to mem_reset_n
+set_location_assignment PIN_AE3 -to mem_dq[0]
+set_location_assignment PIN_AE5 -to mem_dq[1]
+set_location_assignment PIN_AD4 -to mem_dq[2]
+set_location_assignment PIN_AB3 -to mem_dq[3]
+set_location_assignment PIN_AD3 -to mem_dq[4]
+set_location_assignment PIN_AB4 -to mem_dq[5]
+set_location_assignment PIN_AD1 -to mem_dq[6]
+set_location_assignment PIN_AA3 -to mem_dq[7]
+set_location_assignment PIN_AC3 -to mem_dqs[0]
+set_location_assignment PIN_AC4 -to mem_dqs_n[0]
+set_location_assignment PIN_Y7  -to mem_dm[0]
+set_location_assignment PIN_Y3  -to mem_dq[8]
+set_location_assignment PIN_Y1  -to mem_dq[9]
+set_location_assignment PIN_W6  -to mem_dq[10]
+set_location_assignment PIN_W1  -to mem_dq[11]
+set_location_assignment PIN_AB1 -to mem_dq[12]
+set_location_assignment PIN_W3  -to mem_dq[13]
+set_location_assignment PIN_AB2 -to mem_dq[14]
+set_location_assignment PIN_W5  -to mem_dq[15]
+set_location_assignment PIN_Y4  -to mem_dqs[1]
+set_location_assignment PIN_W4  -to mem_dqs_n[1]
+set_location_assignment PIN_Y6  -to mem_dm[1]
+set_location_assignment PIN_U3  -to mem_dq[16]
+set_location_assignment PIN_V1  -to mem_dq[17]
+set_location_assignment PIN_V6  -to mem_dq[18]
+set_location_assignment PIN_V4  -to mem_dq[19]
+set_location_assignment PIN_T6  -to mem_dq[20]
+set_location_assignment PIN_V3  -to mem_dq[21]
+set_location_assignment PIN_T5  -to mem_dq[22]
+set_location_assignment PIN_V2  -to mem_dq[23]
+set_location_assignment PIN_T1  -to mem_dqs[2]
+set_location_assignment PIN_T2  -to mem_dqs_n[2]
+set_location_assignment PIN_U9  -to mem_dm[2]
+set_location_assignment PIN_R6  -to mem_dq[24]
+set_location_assignment PIN_R5  -to mem_dq[25]
+set_location_assignment PIN_N4  -to mem_dq[26]
+set_location_assignment PIN_P6  -to mem_dq[27]
+set_location_assignment PIN_P1  -to mem_dq[28]
+set_location_assignment PIN_R3  -to mem_dq[29]
+set_location_assignment PIN_P3  -to mem_dq[30]
+set_location_assignment PIN_R4  -to mem_dq[31]
+set_location_assignment PIN_R1  -to mem_dqs[3]
+set_location_assignment PIN_R2  -to mem_dqs_n[3]
+set_location_assignment PIN_P7  -to mem_dm[3]
+set_location_assignment PIN_E3  -to mem_dq[32]
+set_location_assignment PIN_H1  -to mem_dq[33]
+set_location_assignment PIN_F3  -to mem_dq[34]
+set_location_assignment PIN_G1  -to mem_dq[35]
+set_location_assignment PIN_H3  -to mem_dq[36]
+set_location_assignment PIN_G2  -to mem_dq[37]
+set_location_assignment PIN_G3  -to mem_dq[38]
+set_location_assignment PIN_J2  -to mem_dq[39]
+set_location_assignment PIN_H4  -to mem_dqs[4]
+set_location_assignment PIN_G4  -to mem_dqs_n[4]
+set_location_assignment PIN_M5  -to mem_dm[4]
+set_location_assignment PIN_M3  -to mem_dq[40]
+set_location_assignment PIN_M2  -to mem_dq[41]
+set_location_assignment PIN_K1  -to mem_dq[42]
+set_location_assignment PIN_L3  -to mem_dq[43]
+set_location_assignment PIN_N3  -to mem_dq[44]
+set_location_assignment PIN_K3  -to mem_dq[45]
+set_location_assignment PIN_M1  -to mem_dq[46]
+set_location_assignment PIN_K2  -to mem_dq[47]
+set_location_assignment PIN_N5  -to mem_dqs[5]
+set_location_assignment PIN_N6  -to mem_dqs_n[5]
+set_location_assignment PIN_N7  -to mem_dm[5]
+set_location_assignment PIN_AF4 -to oct_rzqin
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to oct_rzqin -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[6] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[6] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[6] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[7] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[7] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[7] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[8] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[8] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[8] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[9] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[9] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[9] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[10] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[10] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[10] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[11] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[11] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[11] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[12] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[12] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[12] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[13] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[13] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[13] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[14] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[14] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[14] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[15] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[15] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[15] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[16] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[16] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[16] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[17] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[17] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[17] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[18] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[18] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[18] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[19] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[19] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[19] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[20] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[20] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[20] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[21] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[21] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[21] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[22] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[22] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[22] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[23] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[23] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[23] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[24] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[24] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[24] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[25] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[25] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[25] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[26] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[26] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[26] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[27] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[27] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[27] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[28] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[28] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[28] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[29] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[29] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[29] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[30] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[30] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[30] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[31] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[31] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[31] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[32] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[32] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[32] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[33] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[33] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[33] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[34] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[34] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[34] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[35] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[35] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[35] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[36] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[36] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[36] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[37] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[37] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[37] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[38] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[38] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[38] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[39] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[39] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[39] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[40] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[40] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[40] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[41] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[41] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[41] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[42] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[42] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[42] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[43] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[43] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[43] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[44] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[44] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[44] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[45] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[45] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[45] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[46] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[46] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[46] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dq[47] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dq[47] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dq[47] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_dqs[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dqs[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dqs[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 6 -to mem_dqs[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D6_DELAY 0 -to mem_dqs[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_dqs[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dqs[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dqs[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 6 -to mem_dqs[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D6_DELAY 0 -to mem_dqs[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_dqs[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dqs[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dqs[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 6 -to mem_dqs[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D6_DELAY 0 -to mem_dqs[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_dqs[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dqs[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dqs[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 6 -to mem_dqs[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D6_DELAY 0 -to mem_dqs[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_dqs[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dqs[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dqs[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 6 -to mem_dqs[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D6_DELAY 0 -to mem_dqs[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_dqs[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dqs[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dqs[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 6 -to mem_dqs[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D6_DELAY 0 -to mem_dqs[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_dqs_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dqs_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dqs_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 6 -to mem_dqs_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D6_DELAY 0 -to mem_dqs_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_dqs_n[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dqs_n[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dqs_n[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 6 -to mem_dqs_n[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D6_DELAY 0 -to mem_dqs_n[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_dqs_n[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dqs_n[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dqs_n[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 6 -to mem_dqs_n[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D6_DELAY 0 -to mem_dqs_n[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_dqs_n[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dqs_n[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dqs_n[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 6 -to mem_dqs_n[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D6_DELAY 0 -to mem_dqs_n[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_dqs_n[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dqs_n[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dqs_n[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 6 -to mem_dqs_n[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D6_DELAY 0 -to mem_dqs_n[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_dqs_n[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name INPUT_TERMINATION "PARALLEL 40 OHM WITH CALIBRATION" -to mem_dqs_n[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dqs_n[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 6 -to mem_dqs_n[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D6_DELAY 0 -to mem_dqs_n[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_ck[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_ck[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 2 -to mem_ck[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "DIFFERENTIAL 1.35-V SSTL" -to mem_ck_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_ck_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name D5_DELAY 2 -to mem_ck_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[10] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[10] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[11] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[11] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[12] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[12] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[13] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[13] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[6] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[6] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[7] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[7] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[8] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[8] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_a[9] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_a[9] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_ba[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_ba[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_ba[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_ba[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_ba[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_ba[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_cs_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_cs_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_we_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_we_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_ras_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_ras_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_cas_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_cas_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_odt[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_odt[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_cke[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_cke[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_reset_n -tag __emifsys_emif_0_p0
+set_instance_assignment -name BOARD_MODEL_FAR_PULLUP_R OPEN -to mem_reset_n -tag __emifsys_emif_0_p0
+set_instance_assignment -name BOARD_MODEL_NEAR_PULLUP_R OPEN -to mem_reset_n -tag __emifsys_emif_0_p0
+set_instance_assignment -name BOARD_MODEL_FAR_PULLDOWN_R OPEN -to mem_reset_n -tag __emifsys_emif_0_p0
+set_instance_assignment -name BOARD_MODEL_NEAR_PULLDOWN_R OPEN -to mem_reset_n -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITHOUT CALIBRATION" -to mem_reset_n -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dm[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dm[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dm[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dm[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dm[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dm[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dm[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dm[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dm[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dm[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name IO_STANDARD "SSTL-135" -to mem_dm[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name OUTPUT_TERMINATION "SERIES 40 OHM WITH CALIBRATION" -to mem_dm[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[6] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[7] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[8] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[9] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[10] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[11] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[12] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[13] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[14] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[15] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[16] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[17] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[18] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[19] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[20] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[21] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[22] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[23] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[24] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[25] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[26] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[27] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[28] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[29] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[30] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[31] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[32] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[33] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[34] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[35] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[36] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[37] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[38] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[39] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[40] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[41] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[42] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[43] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[44] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[45] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[46] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dq[47] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dm[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dm[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dm[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dm[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dm[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dm[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dqs[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dqs[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dqs[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dqs[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dqs[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dqs[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dqs_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dqs_n[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dqs_n[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dqs_n[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dqs_n[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_dqs_n[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[10] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[11] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[12] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[13] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[6] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[7] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[8] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_a[9] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_ba[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_ba[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_ba[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_cs_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_we_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_ras_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_cas_n[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_odt[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_cke[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_reset_n -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_ck[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name PACKAGE_SKEW_COMPENSATION OFF -to mem_ck_n[0] -tag __emifsys_emif_0_p0
+# ---- peripheral I/O standards ----
+set_instance_assignment -name IO_STANDARD "2.5 V" -to i_key[*]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to o_led[*]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to o_core_led[*]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to i_uart_rx
+set_instance_assignment -name IO_STANDARD "2.5 V" -to o_uart_tx
+set_instance_assignment -name IO_STANDARD "2.5 V" -to o_sd_ncs
+set_instance_assignment -name IO_STANDARD "2.5 V" -to o_sd_mosi
+set_instance_assignment -name IO_STANDARD "2.5 V" -to o_sd_dclk
+set_instance_assignment -name IO_STANDARD "2.5 V" -to i_sd_miso
+set_instance_assignment -name IO_STANDARD "2.5 V" -to o_hdmi_clk_p
+set_instance_assignment -name IO_STANDARD "2.5 V" -to o_hdmi_clk_n
+set_instance_assignment -name IO_STANDARD "2.5 V" -to o_hdmi_d_p[*]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to o_hdmi_d_n[*]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to o_exter_io1[*]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to o_exter_io2[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW "16MA" -to o_led[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW "16MA" -to o_core_led[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW "16MA" -to o_uart_tx
+set_instance_assignment -name CURRENT_STRENGTH_NEW "16MA" -to o_sd_ncs
+set_instance_assignment -name CURRENT_STRENGTH_NEW "16MA" -to o_sd_mosi
+set_instance_assignment -name CURRENT_STRENGTH_NEW "16MA" -to o_sd_dclk
+set_instance_assignment -name CURRENT_STRENGTH_NEW "16MA" -to o_hdmi_clk_p
+set_instance_assignment -name CURRENT_STRENGTH_NEW "16MA" -to o_hdmi_clk_n
+set_instance_assignment -name CURRENT_STRENGTH_NEW "16MA" -to o_hdmi_d_p[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW "16MA" -to o_hdmi_d_n[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW "16MA" -to o_exter_io1[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW "16MA" -to o_exter_io2[*]
+set_instance_assignment -name SLEW_RATE 1 -to o_led[*]
+set_instance_assignment -name SLEW_RATE 1 -to o_core_led[*]
+set_instance_assignment -name SLEW_RATE 1 -to o_uart_tx
+set_instance_assignment -name SLEW_RATE 1 -to o_sd_ncs
+set_instance_assignment -name SLEW_RATE 1 -to o_sd_mosi
+set_instance_assignment -name SLEW_RATE 1 -to o_sd_dclk
+set_instance_assignment -name SLEW_RATE 1 -to o_hdmi_clk_p
+set_instance_assignment -name SLEW_RATE 1 -to o_hdmi_clk_n
+set_instance_assignment -name SLEW_RATE 1 -to o_hdmi_d_p[*]
+set_instance_assignment -name SLEW_RATE 1 -to o_hdmi_d_n[*]
+set_instance_assignment -name SLEW_RATE 1 -to o_exter_io1[*]
+set_instance_assignment -name SLEW_RATE 1 -to o_exter_io2[*]
+
+# UniPHY clock/resource assignments. Regenerate these with the generated
+# emifsys_emif_0_p0_pin_assignments.tcl whenever the EMIF hierarchy changes.
+set_instance_assignment -name GLOBAL_SIGNAL "GLOBAL CLOCK" -to u_soc|emif_0|pll0|pll_afi_clk -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL "DUAL-REGIONAL CLOCK" -to u_soc|emif_0|pll0|pll_addr_cmd_clk -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL "DUAL-REGIONAL CLOCK" -to u_soc|emif_0|pll0|pll_avl_clk -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL "DUAL-REGIONAL CLOCK" -to u_soc|emif_0|pll0|pll_config_clk -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|ureset|phy_reset_mem_stable_n -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|ureset|phy_reset_n -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|s0|sequencer_rw_mgr_inst|rw_mgr_inst|rw_mgr_core_inst|rw_soft_reset_n -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|uread_datapath|reset_n_fifo_write_side[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|uread_datapath|reset_n_fifo_wraddress[0] -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|uread_datapath|reset_n_fifo_write_side[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|uread_datapath|reset_n_fifo_wraddress[1] -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|uread_datapath|reset_n_fifo_write_side[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|uread_datapath|reset_n_fifo_wraddress[2] -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|uread_datapath|reset_n_fifo_write_side[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|uread_datapath|reset_n_fifo_wraddress[3] -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|uread_datapath|reset_n_fifo_write_side[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|uread_datapath|reset_n_fifo_wraddress[4] -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|uread_datapath|reset_n_fifo_write_side[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name GLOBAL_SIGNAL OFF -to u_soc|emif_0|p0|umemphy|uread_datapath|reset_n_fifo_wraddress[5] -tag __emifsys_emif_0_p0
+set_instance_assignment -name ENABLE_BENEFICIAL_SKEW_OPTIMIZATION_FOR_NON_GLOBAL_CLOCKS ON -to u_soc|emif_0 -tag __emifsys_emif_0_p0
+set_instance_assignment -name PLL_COMPENSATION_MODE DIRECT -to u_soc|emif_0|pll0|fbout -tag __emifsys_emif_0_p0
+
+set_global_assignment -name USE_DLL_FREQUENCY_FOR_DQS_DELAY_CHAIN ON
+set_global_assignment -name ECO_REGENERATE_REPORT ON
+set_global_assignment -name UNIPHY_SEQUENCER_DQS_CONFIG_ENABLE ON
+set_global_assignment -name OPTIMIZE_MULTI_CORNER_TIMING ON
+set_global_assignment -name PHYSICAL_SYNTHESIS_COMBO_LOGIC ON
+set_global_assignment -name PHYSICAL_SYNTHESIS_REGISTER_DUPLICATION ON
+set_global_assignment -name PHYSICAL_SYNTHESIS_REGISTER_RETIMING ON
+set_global_assignment -name PHYSICAL_SYNTHESIS_EFFORT EXTRA
+set_global_assignment -name FINAL_PLACEMENT_OPTIMIZATION ALWAYS
+set_global_assignment -name SEED 12
+
+set_global_assignment -name LAST_QUARTUS_VERSION "18.1.0 Standard Edition"
+set_instance_assignment -name LL_MEMBER_OF emif_ll -to "emifsys:u_soc|emifsys_emif_0:emif_0" -section_id emif_ll
+set_global_assignment -name LL_ENABLED ON -section_id emif_ll
+set_global_assignment -name LL_ORIGIN "X85_Y0" -section_id emif_ll
+set_global_assignment -name LL_WIDTH 15 -section_id emif_ll
+set_global_assignment -name LL_HEIGHT 79 -section_id emif_ll
+set_global_assignment -name LL_STATE LOCKED -section_id emif_ll
+set_global_assignment -name LL_AUTO_SIZE OFF -section_id emif_ll
+set_location_assignment M10K_X92_Y40_N0 -to "emifsys:u_soc|emifsys_emif_0:emif_0|emifsys_emif_0_c0:c0|alt_mem_if_nextgen_ddr3_controller_core:ng0|alt_mem_ddrx_controller_st_top:alt_mem_ddrx_controller_top_inst|alt_mem_ddrx_controller:controller_inst|alt_mem_ddrx_rdata_path:rdata_path_inst|alt_mem_ddrx_buffer:gen_rdata_return_inorder.in_order_buffer_inst|altsyncram:altsyncram_component|altsyncram_1sr1:auto_generated|ram_block1a0"
+set_location_assignment M10K_X92_Y41_N0 -to "emifsys:u_soc|emifsys_emif_0:emif_0|emifsys_emif_0_c0:c0|alt_mem_if_nextgen_ddr3_controller_core:ng0|alt_mem_ddrx_controller_st_top:alt_mem_ddrx_controller_top_inst|alt_mem_ddrx_controller:controller_inst|alt_mem_ddrx_rdata_path:rdata_path_inst|alt_mem_ddrx_buffer:gen_rdata_return_inorder.in_order_buffer_inst|altsyncram:altsyncram_component|altsyncram_1sr1:auto_generated|ram_block1a1"
+set_location_assignment M10K_X92_Y42_N0 -to "emifsys:u_soc|emifsys_emif_0:emif_0|emifsys_emif_0_c0:c0|alt_mem_if_nextgen_ddr3_controller_core:ng0|alt_mem_ddrx_controller_st_top:alt_mem_ddrx_controller_top_inst|alt_mem_ddrx_controller:controller_inst|alt_mem_ddrx_rdata_path:rdata_path_inst|alt_mem_ddrx_buffer:gen_rdata_return_inorder.in_order_buffer_inst|altsyncram:altsyncram_component|altsyncram_1sr1:auto_generated|ram_block1a8"
+set_location_assignment M10K_X92_Y43_N0 -to "emifsys:u_soc|emifsys_emif_0:emif_0|emifsys_emif_0_c0:c0|alt_mem_if_nextgen_ddr3_controller_core:ng0|alt_mem_ddrx_controller_st_top:alt_mem_ddrx_controller_top_inst|alt_mem_ddrx_controller:controller_inst|alt_mem_ddrx_rdata_path:rdata_path_inst|alt_mem_ddrx_buffer:gen_rdata_return_inorder.in_order_buffer_inst|altsyncram:altsyncram_component|altsyncram_1sr1:auto_generated|ram_block1a9"
+set_location_assignment M10K_X92_Y44_N0 -to "emifsys:u_soc|emifsys_emif_0:emif_0|emifsys_emif_0_c0:c0|alt_mem_if_nextgen_ddr3_controller_core:ng0|alt_mem_ddrx_controller_st_top:alt_mem_ddrx_controller_top_inst|alt_mem_ddrx_controller:controller_inst|alt_mem_ddrx_rdata_path:rdata_path_inst|alt_mem_ddrx_buffer:gen_rdata_return_inorder.in_order_buffer_inst|altsyncram:altsyncram_component|altsyncram_1sr1:auto_generated|ram_block1a12"
+set_global_assignment -name PLACEMENT_EFFORT_MULTIPLIER 2.0
+set_global_assignment -name LL_RESERVED OFF -section_id emif_ll

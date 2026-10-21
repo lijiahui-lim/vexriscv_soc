@@ -1,0 +1,11 @@
+obj_dir/
+sim.vcd
+uart.log
+*.elf
+*.bin
+sw/boot*.hex*
+sw/mif_lane*.mif
+quartus/
+ip/
+doc/
+*.bak
