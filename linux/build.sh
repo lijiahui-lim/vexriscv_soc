@@ -53,7 +53,8 @@ i=0
 while [ ! -b /dev/mmcblk0p1 ] && [ $i -lt 30 ]; do i=$((i+1)); sleep 1; done
 if [ -b /dev/mmcblk0p1 ] && mount -t ext4 -o rw /dev/mmcblk0p1 /mnt/sd; then
     echo "rootfs: switch_root -> /dev/mmcblk0p1"
-    switch_root /mnt/sd /init || echo "switch_root failed"
+    exec switch_root /mnt/sd /init   # exec keeps PID1; plain call forks -> pid!=1 -> usage
+    echo "switch_root exec failed"   # reached only if exec failed
 fi
 echo "rootfs: no SD partition — initramfs rescue shell"
 export HOME=/root PATH=/bin:/sbin:/usr/bin:/usr/sbin

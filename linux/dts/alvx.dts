@@ -14,7 +14,7 @@
 	aliases { serial0 = &uart0; };
 	chosen {
 		stdout-path = "serial0:115200n8";
-		bootargs = "earlycon=alvx,mmio32,0xf1004000 console=ttyALV0,115200";
+		bootargs = "earlycon=alvx,mmio32,0xf1004000 console=tty0 console=ttyALV0,115200";
 	};
 
 	cpus {
