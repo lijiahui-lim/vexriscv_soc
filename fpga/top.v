@@ -405,6 +405,14 @@ always @(posedge afi_clk) begin
     vid_st_sync1 <= vid_st_sync0;
 end
 
+// uart rx pin monitor: edge counter + live level (afi_clk domain)
+reg [15:0] rx_edges = 16'd0;
+reg        rx_d    = 1'b1;
+always @(posedge afi_clk) begin
+    rx_d <= i_uart_rx;
+    if (rx_d != i_uart_rx) rx_edges <= rx_edges + 16'd1;
+end
+
 reg  [7:0]  snap_div = 8'd0;
 wire        do_snap = (snap_div == 8'd0);
 
@@ -440,6 +448,7 @@ always @(*) begin
                                              //  db_rd,db_wr,db_wrn,db_rdv}
     8'd19: st_data = soc_dbg[287:256];         // execute_INSTRUCTION
     8'd20: st_data = soc_dbg[319:288];         // {fetchPc[31:16], halt reasons}
+    8'd21: st_data = {15'd0, rx_d, rx_edges};   // uart rx: level + edges
     8'd31: st_data = 32'hC0DE0005;
     default: st_data = 32'd0;
     endcase

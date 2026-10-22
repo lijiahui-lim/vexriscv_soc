@@ -36,6 +36,8 @@ puts [format "w17 stalls: ib=%d db=%d    w18 live: ib_pend=%d db_pend=%d ib_rd=%
     [expr {($x>>7)&1}] [expr {($x>>6)&1}] [expr {($x>>5)&1}] \
     [expr {($x>>4)&1}] [expr {($x>>3)&1}] [expr {($x>>2)&1}] \
     [expr {($x>>1)&1}] [expr {$x&1}]]
+puts [format "w21 uart_rx: level=%d edges=%d" \
+    [expr {([g $w 21]>>16)&1}] [expr {[g $w 21]&0xFFFF}]]
 set h [g $w 20]
 puts [format "w19 execute_INSTRUCTION = 0x%08x" [g $w 19]]
 puts [format "w20 fetchPc_hi=0x%04x haltSelf=%d l395=%d l411refill=%d dcHaltIt=%d flushStall=%d wfi_ex=%d !wfiWake=%d wfiWake=%d csrBlk=%d dbCmdV=%d dbCmdR=%d dbRspV=%d inWfi=%d env=%d" \

@@ -55,11 +55,19 @@ enable} exported for the JTAG mailbox. Board side only needs the
 ## Simulation (local, /opt/oss-cad-suite Verilator 5.049)
 
 - `make sim` — test1; `make sim2` — MMU test. Both print `DONE` on pass.
-- UART: 8N1, divider 135 → bit period = (135+1)*8clk = 17408 sim ticks
-  ≈114890 baud @125MHz (UART_BIT_TICKS env). CLOCK_DIVIDER reg is NOT
-  clk/baud: bit = (div+1)*8 uartclk → div = uartclk/(baud*8) − 1. The
-  kernel driver + boot code all use this formula (divider 8 gave
-  ~1.736 Mbaud — that was the "garbage on ttyUSB1" bug).
+- UART: 8N1 at **115200 baud** on hardware too (boot_linux.c div=135,
+  dts `console=ttyALV0,115200`). CLOCK_DIVIDER reg is NOT clk/baud:
+  bit = (div+1)*8 uartclk → div = uartclk/(baud*8) − 1. Sim builds
+  use div=8 (~1.7 Mbd, BOOT_SIM path) for speed — UART_BIT_TICKS.
+- **Host serial discipline**: ONLY ONE process may open /dev/ttyUSB*
+  at a time. Multiple readers (cat listeners + minicom) split the
+  byte stream AND each open() re-sttys the port / writes init
+  strings — this looked exactly like FPGA RX corruption (garbage
+  bursts, lost chars, "not found" storms) and burned a debug cycle.
+  Before hardware UART tests: `lsof /dev/ttyUSB1`, kill squatters,
+  then `stty -F /dev/ttyUSB1 115200 raw -echo` and attach ONE
+  consumer. Verified clean: `echo hi`/`uname -a`/`free` all correct
+  on hardware.
 - UART status [20:16] = TX FIFO *free slots* — poll `while ==0`.
 - Do NOT use the VM for sim (no ModelSim installed); VM is build-only.
 
@@ -116,7 +124,9 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
   w2..7=avlbr_dbg, w8=fab_hb, w9=ibus{rdv,acc}, w10=dbus{rdv,acc},
   w11=last dBus addr, w12=cpu_dbg (haltIt/fHalt/booted/pc[15:0]...),
   w13={cpu_rst_req,fab_rst_n,afi_rst_n,pll,glb_rst_n}, w14=vid_status,
-  w31=0xC0DE0005.
+  w15/16=i/d pending-cmd {stuck_cnt,addr[19:0]}, w17/18=i/d pend addr,
+  w19=execute_INSTRUCTION, w20={fetchPc[31:16],halt-reason bits},
+  w21={rx_pin_level<<16, rx_edges[15:0]}, w31=0xC0DE0005.
   `open_service master $p` first; use the `phy_2` path only — `phy_1`
   reaches avlbr.s0 and every probe read adds DDR traffic.
 - jtagm/jtagm2 master_read_32 addresses are BYTE offsets into the target

@@ -9,6 +9,8 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <deque>
+#include <vector>
 
 static void dump_cpu(Vsim_top *top) {
     Vsim_top_AlvxChip *c = top->sim_top->u_soc->u_chip;
@@ -102,6 +104,26 @@ int main(int argc, char **argv) {
     int prev_txd = 1;
     std::string ulog;
 
+    // UART RX injection: UART_INJECT="hex,bytes" or plain string fed into
+    // uart_rxd at BIT ticks/bit starting at UART_INJECT_AT (default 5e6).
+    std::deque<int> rbits;
+    if (const char *s = getenv("UART_INJECT")) {
+        std::vector<unsigned> bytes;
+        if (strchr(s, ',')) {
+            const char *p = s;
+            while (*p) { bytes.push_back(strtoul(p, (char**)&p, 16)); if (*p) p++; }
+        } else {
+            for (const char *p = s; *p; p++) bytes.push_back((unsigned char)*p);
+        }
+        for (unsigned b : bytes) {
+            rbits.push_back(0);                      // start
+            for (int i = 0; i < 8; i++) rbits.push_back((b >> i) & 1);
+            rbits.push_back(1); rbits.push_back(1);  // stop + idle gap
+        }
+    }
+    vluint64_t rbit_next = getenv("UART_INJECT_AT")
+                         ? strtoull(getenv("UART_INJECT_AT"), 0, 0) : 5000000;
+
     bool done = false;
     while (!done && sim_time < max_ticks) {
         sim_time++;
@@ -110,6 +132,11 @@ int main(int argc, char **argv) {
         if (clk_edge)  top->clk ^= 1;
         if (afi_edge)  top->afi_clk ^= 1;
         top->eval();
+        if (!rbits.empty() && sim_time >= rbit_next) {
+            top->uart_rxd = rbits.front();
+            rbits.pop_front();
+            rbit_next = sim_time + BIT;
+        }
         if (vcd) {
             vcd->dump(sim_time);
             if (trace_until && sim_time > trace_until) { vcd->close(); vcd = nullptr; }
