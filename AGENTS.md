@@ -181,6 +181,13 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
   (/usr/include/sys/sdt.h present), libgcc configure false-positives
   HAVE_SYS_SDT_H — build with `gcc_cv_sys_sdt_h=no`. GNU make 4.4.1
   cross-compiled statically into /usr/bin/make.
+- Host-side rootfs test (no board, no root needed after one-time
+  `apt install qemu-user-binfmt` which registers riscv32 binfmt with
+  the F flag): `bwrap --bind rootfs/ / --dev /dev --proc /proc
+  --tmpfs /tmp --unshare-all /bin/sh` == chroot; nested guest execve
+  (gcc->cc1->as->ld) works via binfmt. Verified: gcc 13.3 compiles
+  + runs /root/hello.c end-to-end. Plain proot/qemu-user alone can
+  NOT run the compile (guest execve of foreign ELF -> ENOEXEC).
 - Hardware PLIC note: `plicInterrupts[i]` IS source ID i (io_sources =
   plicInterrupts>>1); bit0 must be 0 — soc.v packs {key=3,spi=2,uart=1}.
 - UART driver: `UPF_BOOT_AUTOCONF` makes serial core reset `port->type`
