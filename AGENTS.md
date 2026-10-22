@@ -180,7 +180,17 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
   toolchain in PATH. Gotcha: on hosts with systemtap
   (/usr/include/sys/sdt.h present), libgcc configure false-positives
   HAVE_SYS_SDT_H — build with `gcc_cv_sys_sdt_h=no`. GNU make 4.4.1
-  cross-compiled statically into /usr/bin/make.
+  cross-compiled statically into /usr/bin/make. Common target libs are
+  cross-built by `/home/li/work/altera/rootfs/mklibs.sh` into
+  `libs-stage/` (zlib, bzip2, xz, zstd, ncurses+terminfo, readline,
+  openssl, sqlite, libffi, expat, libpng, libjpeg-turbo, freetype,
+  libxml2, pkgconf, m4, bison, flex, nano) and merged by mkrootfs.sh.
+  Gotchas: openssl needs `-latomic` in ex_libs (no native 64-bit
+  atomics on rv32); ncurses install needs INSTALL_PROG without `-s`
+  (host strip can't read rv32); terminfo db compiled by running the
+  rv32 tic via `qemu-riscv32 -L libs-stage`; flex uses the tarball's
+  pregenerated scan.c as stage1scan.c (rv32 stage1flex crashes under
+  qemu-user); libjpeg-turbo cmake needs -DCMAKE_INSTALL_LIBDIR=lib.
 - Host-side rootfs test (no board, no root needed after one-time
   `apt install qemu-user-binfmt` which registers riscv32 binfmt with
   the F flag): `bwrap --bind rootfs/ / --dev /dev --proc /proc
