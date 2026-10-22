@@ -99,6 +99,9 @@ static bool alvx_tx(struct uart_port *p)
 		alvx_write(p, OFF_DATA, ch);
 		work = true;
 	}
+	if (kfifo_len(&tport->xmit_fifo) == 0)
+		alvx_write(p, OFF_STATUS,
+			   alvx_read(p, OFF_STATUS) & ~ST_TXIEN);
 	if (kfifo_len(&tport->xmit_fifo) < WAKEUP_CHARS)
 		uart_write_wakeup(p);
 	return work;
@@ -118,6 +121,9 @@ static irqreturn_t alvx_irq(int irq, void *dev_id)
 	if (st & ST_TXINT)
 		work |= alvx_tx(p);
 	uart_port_unlock_irqrestore(p, flags);
+
+	if (st & (ST_RXINT | ST_TXINT))
+		work = true;			/* our line was asserted */
 
 	if (work) {
 		tty_flip_buffer_push(&p->state->port);

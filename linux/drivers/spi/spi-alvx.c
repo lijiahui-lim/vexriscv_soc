@@ -83,7 +83,9 @@ static int alvx_transfer_one(struct spi_controller *ctlr,
 	if (div)
 		writel(div, s->base + OFF_DIV);
 	mode = (spi->mode & SPI_CPOL ? 1 : 0) | (spi->mode & SPI_CPHA ? 2 : 0);
-	writel(mode | MODE_SS0_NCS, s->base + OFF_MODE);
+	if (!(spi->mode & SPI_CS_HIGH))
+		mode |= MODE_SS0_NCS;	/* pin = ss ^ 1 -> active-low */
+	writel(mode, s->base + OFF_MODE);
 
 	for (i = 0; i < t->len; i++) {
 		spi_push(s, CMD_DATA_RD | (tx ? tx[i] : 0xff));
@@ -129,7 +131,7 @@ static int alvx_probe(struct platform_device *pdev)
 
 	ctlr->dev.of_node = pdev->dev.of_node;
 	ctlr->num_chipselect = 1;
-	ctlr->mode_bits = SPI_CPOL | SPI_CPHA;
+	ctlr->mode_bits = SPI_CPOL | SPI_CPHA | SPI_CS_HIGH;
 	ctlr->bits_per_word_mask = SPI_BPW_MASK(8);
 	ctlr->setup = alvx_setup;
 	ctlr->set_cs = alvx_set_cs;
