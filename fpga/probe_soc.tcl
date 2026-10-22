@@ -29,6 +29,9 @@ set f [g $w 13]
 puts [format "w13 resets: cpu_rst_req=%d fab_rst_n=%d afi_rst_n=%d pll=%d glb_rst_n=%d" \
     [expr {($f>>4)&1}] [expr {($f>>3)&1}] [expr {($f>>2)&1}] \
     [expr {($f>>1)&1}] [expr {$f&1}]]
+set v [g $w 14]
+puts [format "w14 vid_status: busy=%d underRun=%d enable=%d" \
+    [expr {($v>>2)&1}] [expr {($v>>1)&1}] [expr {$v&1}]]
 set x [g $w 18]
 puts [format "w15 db_pend_addr = 0x%08x   w16 ib_pend_addr = 0x%08x" [g $w 15] [g $w 16]]
 puts [format "w17 stalls: ib=%d db=%d    w18 live: ib_pend=%d db_pend=%d ib_rd=%d ib_wrn=%d db_rd=%d db_wr=%d db_wrn=%d any_rdv=%d" \
