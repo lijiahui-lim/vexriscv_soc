@@ -175,14 +175,14 @@ int main(void)
     /* black framebuffer + start the generated video pipeline.
      * Full 3.5 MiB clear is fine on HW (~ms); in sim it would blow the
      * tick budget, so only paint a few lines there. */
-    uint32_t fbw = 1280u * 720;
+    uint32_t fbw = 640u * 480;
 #ifdef BOOT_SIM
-    fbw = 1280u * 8;
+    fbw = 640u * 8;
 #endif
     for (i = 0; i < fbw; i++)
         ((volatile uint32_t *)FB)[i] = 0;
     REG32(VID + 0x00) = (FB - DDR) / 32;
-    REG32(VID + 0x04) = (720u * 1280) / 8 - 1;
+    REG32(VID + 0x04) = (480u * 640) / 8 - 1;
     REG32(VID + 0x08) = 1;
     sc[1] = REG32(VID + 0x0C);
     uart_puts("video on\n");

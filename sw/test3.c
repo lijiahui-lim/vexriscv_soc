@@ -15,7 +15,7 @@
 #define REG32(a)   (*(volatile uint32_t *)(a))
 
 #ifndef FB_ROWS
-#define FB_ROWS 720                      /* sim build uses a small value */
+#define FB_ROWS 480                      /* sim build uses a small value */
 #endif
 
 static void uart_init(void)
@@ -103,15 +103,15 @@ int main(void)
 
     /* -------- framebuffer: 8 vertical color bars -------------- */
     for (y = 0; y < FB_ROWS; y++) {
-        for (x = 0; x < 1280; x++) {
+        for (x = 0; x < 640; x++) {
             uint32_t c;
-            switch ((x * 8) / 1280) {
+            switch ((x * 8) / 640) {
             case 0: c = 0xFFFFFF; break;  case 1: c = 0xFFFF00; break;
             case 2: c = 0x00FFFF; break;  case 3: c = 0x00FF00; break;
             case 4: c = 0xFF00FF; break;  case 5: c = 0xFF0000; break;
             case 6: c = 0x0000FF; break;  default: c = 0x000000; break;
             }
-            fb[y * 1280 + x] = c;
+            fb[y * 640 + x] = c;
         }
     }
     sc[0] = 0x30000002;
@@ -121,7 +121,7 @@ int main(void)
        +0 base = window-relative addr in 32B units, +4 size = bursts-1,
        +8 ctrl bit0 = enable, +0C status {busy<<1, underrun} (W1C).    */
     REG32(VID + 0x00) = (FB - DDR) / 32;
-    REG32(VID + 0x04) = (FB_ROWS * 1280) / 8 - 1;
+    REG32(VID + 0x04) = (FB_ROWS * 640) / 8 - 1;
     REG32(VID + 0x08) = 1;
     { volatile int d; for (d = 0; d < 40000; d++) ; }
     sc[1] = REG32(VID + 0x0C);

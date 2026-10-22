@@ -50,7 +50,8 @@ frame, then re-armed at every vsync), `+0C` status `{busy<<1, underRun}`
 read-only master (8-word bursts) → DDR arbiter slot 2. `tmds0/1/2` =
 10-bit codes on `pix_clk` (b+g+r); `vid_status[3:0]` = {busy, underRun,
 enable} exported for the JTAG mailbox. Board side only needs the
-`serializer_10_to_1`+`ddio_out` primitives + `vidpll` (75/375/125 MHz).
+`serializer_10_to_1`+`ddio_out` primitives + `vidpll` (25/125/125 MHz —
+VGA 640x480@59.5 negative sync; earlier 720p/75/375 MHz is in git history).
 - VideoDma credits: `pendingRequetMax` caps outstanding commands
   (cmd fifo); `toManyPendingRsp` (gray-code push/pop counter) caps
   in-flight+buffered data at exactly `fifoSize` words — raising

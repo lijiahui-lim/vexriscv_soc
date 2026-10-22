@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.13.0    git head : d9d72474863badf47d8585d187f3e04ae4749c59
 // Component : AlvxChip
-// Git hash  : 955a205727b253cadf878a5bb0757d6306195631
+// Git hash  : 4c2369e4e28c2d1c4830dc780e854ca027ca43b9
 
 `timescale 1ns/1ps
 
@@ -10477,8 +10477,8 @@ module AlvxApb (
   wire                video_errTglD;
   reg                 video_errTglQ;
   reg                 video_enQ;
-  wire                when_AlvxApb_l241;
-  wire                when_AlvxApb_l244;
+  wire                when_AlvxApb_l242;
+  wire                when_AlvxApb_l245;
   wire       [11:0]   video_regs_apb_PADDR;
   wire       [0:0]    video_regs_apb_PSEL;
   wire                video_regs_apb_PENABLE;
@@ -10621,16 +10621,16 @@ module AlvxApb (
   );
   VgaCtrl video_pixArea_ctrl (
     .io_softReset            (video_pixArea_ctrl_io_softReset                                 ), //i
-    .io_timings_h_syncStart  (12'h06d                                                         ), //i
-    .io_timings_h_syncEnd    (12'h671                                                         ), //i
-    .io_timings_h_colorStart (12'h149                                                         ), //i
-    .io_timings_h_colorEnd   (12'h649                                                         ), //i
-    .io_timings_h_polarity   (1'b1                                                            ), //i
-    .io_timings_v_syncStart  (12'h004                                                         ), //i
-    .io_timings_v_syncEnd    (12'h2ed                                                         ), //i
-    .io_timings_v_colorStart (12'h018                                                         ), //i
-    .io_timings_v_colorEnd   (12'h2e8                                                         ), //i
-    .io_timings_v_polarity   (1'b1                                                            ), //i
+    .io_timings_h_syncStart  (12'h05f                                                         ), //i
+    .io_timings_h_syncEnd    (12'h31f                                                         ), //i
+    .io_timings_h_colorStart (12'h08f                                                         ), //i
+    .io_timings_h_colorEnd   (12'h30f                                                         ), //i
+    .io_timings_h_polarity   (1'b0                                                            ), //i
+    .io_timings_v_syncStart  (12'h001                                                         ), //i
+    .io_timings_v_syncEnd    (12'h20c                                                         ), //i
+    .io_timings_v_colorStart (12'h022                                                         ), //i
+    .io_timings_v_colorEnd   (12'h202                                                         ), //i
+    .io_timings_v_polarity   (1'b0                                                            ), //i
     .io_frameStart           (video_pixArea_ctrl_io_frameStart                                ), //o
     .io_pixels_valid         (video_dma_io_frame_translated_translated_haltWhen_valid         ), //i
     .io_pixels_ready         (video_pixArea_ctrl_io_pixels_ready                              ), //o
@@ -11034,8 +11034,8 @@ module AlvxApb (
   assign io_tmds2 = video_pixArea_encR_io_TMDS;
   assign video_frameTglD = video_pixArea_frameTgl_buffercc_io_dataOut;
   assign video_errTglD = video_pixArea_errTgl_buffercc_io_dataOut;
-  assign when_AlvxApb_l241 = ((video_enable && (! video_enQ)) || ((video_enable && (! video_dma_io_busy)) && (video_frameTglD != video_frameTglQ)));
-  assign when_AlvxApb_l244 = (video_errTglD != video_errTglQ);
+  assign when_AlvxApb_l242 = ((video_enable && (! video_enQ)) || ((video_enable && (! video_dma_io_busy)) && (video_frameTglD != video_frameTglQ)));
+  assign when_AlvxApb_l245 = (video_errTglD != video_errTglQ);
   assign io_vid_status = {{{1'b0,video_dma_io_busy},video_underRun},video_enable};
   assign video_regs_factory_readErrorFlag = 1'b0;
   assign video_regs_factory_writeErrorFlag = 1'b0;
@@ -11090,7 +11090,7 @@ module AlvxApb (
       keyFlag <= 1'b0;
       video_enable <= 1'b0;
       video_base <= 25'h0c00000;
-      video_size <= 18'h1c1ff;
+      video_size <= 18'h095ff;
       video_underRun <= 1'b0;
       video_startReq <= 1'b0;
       video_rspBeat_value <= 3'b000;
@@ -11101,10 +11101,10 @@ module AlvxApb (
       end
       video_startReq <= 1'b0;
       video_rspBeat_value <= video_rspBeat_valueNext;
-      if(when_AlvxApb_l241) begin
+      if(when_AlvxApb_l242) begin
         video_startReq <= 1'b1;
       end
-      if(when_AlvxApb_l244) begin
+      if(when_AlvxApb_l245) begin
         video_underRun <= 1'b1;
       end
       video_base <= video_base_driver;

@@ -111,10 +111,10 @@
 	/* streamed by the on-chip VideoDma; bootloader enables it */
 	framebuffer@58000000 {
 		compatible = "simple-framebuffer";
-		reg = <0x58000000 0x384000>;	/* 1280*720*4 */
-		width = <1280>;
-		height = <720>;
-		stride = <5120>;
+		reg = <0x58000000 0x12C000>;	/* 640*480*4 */
+		width = <640>;
+		height = <480>;
+		stride = <2560>;
 		format = "x8r8g8b8";
 	};
 };

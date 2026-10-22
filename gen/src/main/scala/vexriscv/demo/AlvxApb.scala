@@ -152,7 +152,7 @@ case class AlvxApb() extends Component {
       config = ClockDomainConfig(resetKind = ASYNC)
     )
 
-    // frame: 1280x720 RGB888 words = 921600 words = 115200 bursts of 8
+    // frame: 640x480 RGB888 words = 307200 words = 38400 bursts of 8
     val BEAT_PER_ACCESS = 8
     val dma = VideoDma(VideoDmaGeneric(
       addressWidth      = 25,       // burst-granular (32B) address
@@ -161,14 +161,14 @@ case class AlvxApb() extends Component {
       sizeWidth         = 18,       // max bursts-1 = 262143 -> 8 MB
       frameFragmentType = Bits(32 bits),
       pendingRequetMax  = 31,       // +1 must be a power of 2
-      fifoSize          = 8192,     // words; ~6.8 lines of buffer
+      fifoSize          = 8192,     // words; ~13.6 lines of buffer
       frameClock        = pixClockDomain
     ))
 
     // ---- CSRs (fab clock) ----
     val enable   = RegInit(False)
     val base     = RegInit(U(0x18000000 / 32, 25 bits))  // 32B units
-    val size     = RegInit(U(921600 / 8 - 1, 18 bits))   // burst count - 1
+    val size     = RegInit(U(307200 / 8 - 1, 18 bits))   // burst count - 1
     val underRun = RegInit(False)
 
     // restart one frame read at every v-sync boundary while enabled
@@ -195,10 +195,11 @@ case class AlvxApb() extends Component {
       val enPix   = BufferCC(enable)
       val ctrl    = new VgaCtrl(rgbCfg)
       ctrl.io.softReset := !enPix
-      // 720p60: h 1280 + 110sync + 220back + 40front; v 720 + 5 + 20 + 5
+      // VGA 640x480: h 640 + 96sync + 48back + 16front; v 480 + 2 + 33 + 10
+      // negative sync polarity (720p used positive)
       ctrl.io.timings.setAs(
-        hPixels = 1280, hSync = 110, hFront = 40, hBack = 220, hPolarity = true,
-        vPixels = 720,  vSync = 5,   vFront = 5,  vBack = 20,  vPolarity = true
+        hPixels = 640, hSync = 96, hFront = 16, hBack = 48, hPolarity = false,
+        vPixels = 480, vSync = 2,  vFront = 10, vBack = 33, vPolarity = false
       )
       // dma words are 32-bit x8r8g8b8 (rgb in low 24 bits); feed Rgb stream.
       // Rgb declares r first and assignFromBits maps r to the LSB, so feed
