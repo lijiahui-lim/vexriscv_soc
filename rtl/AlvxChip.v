@@ -10982,7 +10982,7 @@ module AlvxApb (
   assign io_vid_mem_read = video_dma_io_mem_cmd_valid;
   assign io_vid_mem_address = ({5'd0,video_dma_io_mem_cmd_payload} <<< 3'd5);
   assign io_vid_mem_burstCount = 4'b1000;
-  assign video_dma_io_mem_cmd_ready = (io_vid_mem_read && (! io_vid_mem_waitRequestn));
+  assign video_dma_io_mem_cmd_ready = (io_vid_mem_read && io_vid_mem_waitRequestn);
   always @(*) begin
     video_rspBeat_willIncrement = 1'b0;
     if(io_vid_mem_readDataValid) begin

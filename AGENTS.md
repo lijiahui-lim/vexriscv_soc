@@ -115,6 +115,16 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
 - `MEM_BL=OTF`, `BYTE_ENABLE=1`, `mavl_byteenable` must be driven.
 - `mavl_beginbursttransfer` = 1-cycle pulse per new command.
 - CPU `waitRequestn` and UniPHY `mavl_waitrequest_n` are ACTIVE-LOW.
+- **VideoDma waitRequestn polarity bug (fixed)**: `AlvxApb.scala` had
+  `dma.io.mem.cmd.ready := io.vid_mem.read && !io.vid_mem.waitRequestn`.
+  waitRequestn is active-LOW (1=ready), so the `!` made commands fire
+  exactly when the slave was holding the master off: the first ~15
+  "phantom" accepts drained pendingMemCmd, no real read ever reached the
+  bridge, no rsp.last freed credits -> DMA wedged, fifo empty, VgaCtrl
+  underran every frame -> busy=1/underRun=1, TMDS timing perfect but
+  screen pure black. test3/sim3 can't catch it (never checks pixels).
+  Fixed: `cmd.ready := read && waitRequestn`. If video dies again, check
+  `devmem 0xf100700c` bit1 after a W1C clear + look for real fb fetches.
 - Avalon read burst = ONE accepted command, N readdatavalid beats; write
   burst = N accepted beats.
 - Programming only via Windows jtagserver (`li@192.168.2.209`):

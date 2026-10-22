@@ -182,7 +182,7 @@ case class AlvxApb() extends Component {
     io.vid_mem.read       := dma.io.mem.cmd.valid
     io.vid_mem.address    := dma.io.mem.cmd.payload << 5   // 32B units -> byte
     io.vid_mem.burstCount := U(BEAT_PER_ACCESS)
-    dma.io.mem.cmd.ready  := io.vid_mem.read && !io.vid_mem.waitRequestn
+    dma.io.mem.cmd.ready  := io.vid_mem.read && io.vid_mem.waitRequestn
 
     val rspBeat = Counter(BEAT_PER_ACCESS)
     dma.io.mem.rsp.valid    := io.vid_mem.readDataValid

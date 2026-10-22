@@ -13,7 +13,9 @@ module avl_mux #(
     parameter DW = 32,
     parameter BW = 8,
     parameter SW = (N <= 1) ? 1 : $clog2(N),
-    parameter RFIFO_AW = 5                     // 32 read bursts outstanding
+    parameter RFIFO_AW = 5,                    // 32 read bursts outstanding
+    parameter [N-1:0] RD_LOCK_M = {N{1'b0}},   // masters whose reads grant-lock
+    parameter [7:0]   RD_LOCK_N = 8'd1         // commands per locked read window
 )(
     input  wire              clk,
     input  wire              reset_n,
@@ -49,6 +51,7 @@ wire [N-1:0] req = m_read | m_write;
 // ---- grant (locked only across write-burst beats) --------------------
 reg  [SW-1:0] grant    = {SW{1'b0}};
 reg           locked   = 1'b0;
+reg           lock_rd  = 1'b0;              // locked window is a read batch
 reg  [BW-1:0] beats    = {BW{1'b0}};
 reg  [N-1:0]  rr_mask  = {N{1'b1}};         // rotating priority mask
 
@@ -79,19 +82,34 @@ always @(posedge clk or negedge reset_n) begin
         grant  <= {SW{1'b0}};
         beats  <= {BW{1'b0}};
         rr_mask <= {N{1'b1}};
+    end else if (locked && lock_rd && !req[grant]) begin
+        // read-lock master ran out of requests (credit limit) -> release
+        locked  <= 1'b0;
+        lock_rd <= 1'b0;
+        rr_mask <= {N{1'b1}} << (grant + 1'b1);
     end else if (m_accept) begin
         if (!locked) begin
-            // write bursts lock the grant; single beats & reads don't
+            // write bursts lock the grant; single beats & reads don't,
+            // unless the master is marked for read-lock batching (the
+            // video DMA: back-to-back same-stream reads spare the
+            // speculative bridge a drain+re-arm per switch).
             if (cur_is_wr && (cur_bc > {{BW-1{1'b0}},1'b1})) begin
                 locked <= 1'b1;
+                lock_rd <= 1'b0;
                 grant  <= cur;
                 beats  <= cur_bc - 1'b1;
+            end else if (RD_LOCK_M[cand_id] && cur_is_rd) begin
+                locked <= 1'b1;
+                lock_rd <= 1'b1;
+                grant  <= cur;
+                beats  <= RD_LOCK_N[7:0] - 8'd1;
             end else begin
                 rr_mask <= {N{1'b1}} << (cur + 1'b1);
             end
         end else begin
             if (beats <= {{BW-1{1'b0}},1'b1}) begin
-                locked <= 1'b0;
+                locked  <= 1'b0;
+                lock_rd <= 1'b0;
                 rr_mask <= {N{1'b1}} << (grant + 1'b1);
             end else
                 beats <= beats - 1'b1;
