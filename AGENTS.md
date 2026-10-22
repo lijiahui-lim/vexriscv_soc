@@ -165,6 +165,20 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
   falls back to JTAG magic word @DDR+0x06000000 (`fpga/load_blob.tcl`
   uploads fw_payload.bin then writes magic). Jumps to 0x40000000 with
   a0=hartid(0), a1=0. Magic/scratch MUST sit above the ~38 MiB blob
+- SD card layout (mksdimg.sh, single dd-able file):
+  LBA0 MBR (p1 type 0x83 @LBA131072 = 64 MiB) | LBA1 boot header |
+  LBA64 payload (~30 MB) | LBA131072 ext4 rootfs (1 GiB,
+  `/home/li/work/altera/rootfs/img/rootfs.ext4` via `mkrootfs.sh`).
+  initramfs /init waits up to 30 s for /dev/mmcblk0p1 then
+  switch_roots into the ext4 /init; absent partition → initramfs
+  rescue shell.
+- On-target gcc: `musl-cross-make NATIVE=y` (canadian cross, HOST=TARGET
+  =riscv32-linux-musl, --prefix= --with-sysroot=/ → unpack at /)
+  builds gcc+g+++binutils that RUN on the board; needs the cross
+  toolchain in PATH. Gotcha: on hosts with systemtap
+  (/usr/include/sys/sdt.h present), libgcc configure false-positives
+  HAVE_SYS_SDT_H — build with `gcc_cv_sys_sdt_h=no`. GNU make 4.4.1
+  cross-compiled statically into /usr/bin/make.
   footprint (they are at 0x46000000/0x46000100, below the fb carve
   0x58000000); writing inside the blob corrupts the kernel image.
 - Hardware PLIC note: `plicInterrupts[i]` IS source ID i (io_sources =

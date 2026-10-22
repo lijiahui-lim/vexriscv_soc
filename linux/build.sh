@@ -48,7 +48,14 @@ mount -t tmpfs none /tmp
 echo "=========================================="
 echo " ALVX VexRiscv RV32IMA+Sv32 Linux"
 echo "=========================================="
-[ -b /dev/mmcblk0p1 ] && mount -t vfat /dev/mmcblk0p1 /mnt/sd 2>/dev/null && echo "SD mounted at /mnt/sd"
+# real rootfs on SD partition 1 (ext4) — wait for mmc_spi probe
+i=0
+while [ ! -b /dev/mmcblk0p1 ] && [ $i -lt 30 ]; do i=$((i+1)); sleep 1; done
+if [ -b /dev/mmcblk0p1 ] && mount -t ext4 -o rw /dev/mmcblk0p1 /mnt/sd; then
+    echo "rootfs: switch_root -> /dev/mmcblk0p1"
+    switch_root /mnt/sd /init || echo "switch_root failed"
+fi
+echo "rootfs: no SD partition — initramfs rescue shell"
 export HOME=/root PATH=/bin:/sbin:/usr/bin:/usr/sbin
 exec /bin/sh
 EOF
