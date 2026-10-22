@@ -160,8 +160,8 @@ case class AlvxApb() extends Component {
       beatPerAccess     = BEAT_PER_ACCESS,
       sizeWidth         = 18,       // max bursts-1 = 262143 -> 8 MB
       frameFragmentType = Bits(32 bits),
-      pendingRequetMax  = 15,       // +1 must be a power of 2
-      fifoSize          = 2048,     // words; ~2.7 lines of buffer
+      pendingRequetMax  = 31,       // +1 must be a power of 2
+      fifoSize          = 8192,     // words; ~6.8 lines of buffer
       frameClock        = pixClockDomain
     ))
 

@@ -41,18 +41,31 @@ always @(posedge serial_clk_5x) begin
     end    
 end                     
 
+// pipeline stage before the DDR output cell: the shift register fans out
+// to four IOB flops and the last hop misses 375 MHz timing by ~0.2 ns.
+// Registering here lets the fitter pull the source next to the IOE.
+// +1 serial_clk_5x cycle of latency is identical across all four
+// serializers, so lane alignment is preserved.
+reg out_rise_p, out_fall_p, out_rise_n, out_fall_n;
+always @(posedge serial_clk_5x) begin
+    out_rise_p <= datain_rise_shift[0];
+    out_fall_p <= datain_fall_shift[0];
+    out_rise_n <= ~datain_rise_shift[0];
+    out_fall_n <= ~datain_fall_shift[0];
+end
+
 //例化DDIO_OUT IP核
 ddio_out  u_ddio_out_p(
-    .datain_h    ( datain_rise_shift[0]),
-    .datain_l    ( datain_fall_shift[0]),
+    .datain_h    ( out_rise_p),
+    .datain_l    ( out_fall_p),
     .outclock    (serial_clk_5x),
     .dataout     (serial_data_p)
     );
 
 //例化DDIO_OUT IP核
 ddio_out  u_ddio_out_n(
-    .datain_h    ( ~datain_rise_shift[0]),
-    .datain_l    ( ~datain_fall_shift[0]),
+    .datain_h    ( out_rise_n),
+    .datain_l    ( out_fall_n),
     .outclock    (serial_clk_5x),
     .dataout     (serial_data_n)
     );       

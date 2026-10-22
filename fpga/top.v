@@ -405,6 +405,22 @@ always @(posedge afi_clk) begin
     vid_st_sync1 <= vid_st_sync0;
 end
 
+// soc_dbg + fab_hb + fab-side reset/lock flags -> afi_clk 2-flop sync.
+// Debug-only data; per-bit sync means a word can straddle two source
+// samples (fine for a human-readable mailbox) but no timing path is
+// left unconstrained.
+reg [319:0] soc_dbg_s0 = 320'd0, soc_dbg_s1 = 320'd0;
+reg [26:0]  fab_hb_s0 = 27'd0, fab_hb_s1 = 27'd0;
+reg [3:0]   misc_s0 = 4'd0, misc_s1 = 4'd0;   // {cpu_reset_req, fab_reset_n, pll_locked, global_reset_n}
+always @(posedge afi_clk) begin
+    soc_dbg_s0 <= soc_dbg;
+    soc_dbg_s1 <= soc_dbg_s0;
+    fab_hb_s0  <= fab_hb;
+    fab_hb_s1  <= fab_hb_s0;
+    misc_s0    <= {cpu_reset_req, fab_reset_n, pll_locked, global_reset_n};
+    misc_s1    <= misc_s0;
+end
+
 reg  [7:0]  snap_div = 8'd0;
 wire        do_snap = (snap_div == 8'd0);
 
@@ -417,7 +433,7 @@ end
 always @(*) begin
     case (st_addr)
     8'd0:  st_data = {16'hD3B8, 11'd0, local_cal_fail, local_cal_success,
-                      local_init_done, pll_locked, vid_st_sync1[1]};
+                      local_init_done, misc_s1[1], vid_st_sync1[1]};
     8'd1:  st_data = hb_cnt;
     8'd2:  st_data = avlbr_dbg[31:0];
     8'd3:  st_data = avlbr_dbg[63:32];
@@ -425,21 +441,21 @@ always @(*) begin
     8'd5:  st_data = avlbr_dbg[127:96];
     8'd6:  st_data = avlbr_dbg[159:128];
     8'd7:  st_data = avlbr_dbg[191:160];
-    8'd8:  st_data = {5'd0, fab_hb};
-    8'd9:  st_data = soc_dbg[31:0];          // {ib_rdv, ib_acc}
-    8'd10: st_data = soc_dbg[63:32];         // {db_rdv, db_acc}
-    8'd11: st_data = soc_dbg[95:64];         // last iBus address
-    8'd12: st_data = soc_dbg[127:96];        // live cpu bus levels
-    8'd13: st_data = {27'd0, cpu_reset_req, fab_reset_n,
-                      afi_reset_n, pll_locked, global_reset_n};
+    8'd8:  st_data = {5'd0, fab_hb_s1};
+    8'd9:  st_data = soc_dbg_s1[31:0];          // {ib_rdv, ib_acc}
+    8'd10: st_data = soc_dbg_s1[63:32];         // {db_rdv, db_acc}
+    8'd11: st_data = soc_dbg_s1[95:64];         // last iBus address
+    8'd12: st_data = soc_dbg_s1[127:96];        // live cpu bus levels
+    8'd13: st_data = {27'd0, misc_s1[3], misc_s1[2],
+                      afi_reset_n, misc_s1[1], misc_s1[0]};
     8'd14: st_data = {28'd0, vid_st_sync1};    // {busy, underRun, enable}
-    8'd15: st_data = soc_dbg[159:128];         // pending dBus cmd address
-    8'd16: st_data = soc_dbg[191:160];         // pending iBus cmd address
-    8'd17: st_data = soc_dbg[223:192];         // {ib_stall, db_stall} cycles
-    8'd18: st_data = soc_dbg[255:224];         // {ib_pend,db_pend,ib_rd,ib_wrn,
+    8'd15: st_data = soc_dbg_s1[159:128];         // pending dBus cmd address
+    8'd16: st_data = soc_dbg_s1[191:160];         // pending iBus cmd address
+    8'd17: st_data = soc_dbg_s1[223:192];         // {ib_stall, db_stall} cycles
+    8'd18: st_data = soc_dbg_s1[255:224];         // {ib_pend,db_pend,ib_rd,ib_wrn,
                                              //  db_rd,db_wr,db_wrn,db_rdv}
-    8'd19: st_data = soc_dbg[287:256];         // execute_INSTRUCTION
-    8'd20: st_data = soc_dbg[319:288];         // {fetchPc[31:16], halt reasons}
+    8'd19: st_data = soc_dbg_s1[287:256];         // execute_INSTRUCTION
+    8'd20: st_data = soc_dbg_s1[319:288];         // {fetchPc[31:16], halt reasons}
     8'd31: st_data = 32'hC0DE0005;
     default: st_data = 32'd0;
     endcase

@@ -51,6 +51,29 @@ read-only master (8-word bursts) → DDR arbiter slot 2. `tmds0/1/2` =
 10-bit codes on `pix_clk` (b+g+r); `vid_status[3:0]` = {busy, underRun,
 enable} exported for the JTAG mailbox. Board side only needs the
 `serializer_10_to_1`+`ddio_out` primitives + `vidpll` (75/375/125 MHz).
+- VideoDma credits: `pendingRequetMax` caps outstanding commands
+  (cmd fifo); `toManyPendingRsp` (gray-code push/pop counter) caps
+  in-flight+buffered data at exactly `fifoSize` words — raising
+  fifoSize is the ONLY way to deepen the video buffer.
+- dma.io.mem.rsp.last is generated in AlvxApb by a local beat counter
+  (assumes every accepted 8-word burst returns exactly 8 contiguous
+  beats); `memRsp.last` (frame end) is computed from pendingMemRsp==1.
+- Debug status `busy` toggles 0/1 during normal frame cycling;
+  `underRun` is sticky until W1C — clear + resample after ~1 s to
+  measure current health, never trust the power-on value.
+- Diagnostic flow that isolated a real starvation case: JTAG
+  `fb_markers.tcl`/`fb_fill.tcl` write known pixels directly to DDR
+  fb (CPU addr 0x58000000 = window offset 0x18000000). Solid-color
+  fill showed a *clean uniform screen with occasional flickering
+  lines* = zero data corruption, pure supply underrun.
+- `fpga/fb_fill.tcl`: `master_write_memory path addr {byte list}`
+  (little-endian bytes → 32-bit words), ~8 KiB chunks.
+- Mailbox `soc_dbg`/`fab_hb` + reset/lock flags are fab_clk but feed
+  `dbg_ram.s2` which is clocked by **afi_clk** — a raw CDC that STA
+  flagged at −5.5 ns (worse than every real path). They are now
+  2-flop-synced in top.v; keep ANY new mailbox source on afi_clk or
+  sync it the same way (per-bit sync is fine, debug data tolerates
+  word tearing).
 
 ## Simulation (local, /opt/oss-cad-suite Verilator 5.049)
 

@@ -32,5 +32,12 @@ set_false_path -to [get_registers {*buffers_0*}]
 # video status nibble: fab_clk -> afi_clk mailbox 2-flop sync, quasi-static.
 set_false_path -to [get_registers {*vid_st_sync0*}]
 
+# mailbox debug bundle: soc_dbg/fab_hb/fab reset+lock flags -> afi_clk
+# 2-flop sync (top.v). Cut paths into the first stage only; the s1
+# stage is afi_clk->afi_clk and stays timed.
+set_false_path -to [get_registers {*soc_dbg_s0*}]
+set_false_path -to [get_registers {*fab_hb_s0*}]
+set_false_path -to [get_registers {*misc_s0*}]
+
 derive_pll_clocks
 derive_clock_uncertainty

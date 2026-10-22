@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.13.0    git head : d9d72474863badf47d8585d187f3e04ae4749c59
 // Component : AlvxChip
-// Git hash  : 1b04095333f0298d016df04bd53e7c0d3b7a8e1e
+// Git hash  : 955a205727b253cadf878a5bb0757d6306195631
 
 `timescale 1ns/1ps
 
@@ -5683,7 +5683,6 @@ module AlvxChip (
     /* [17]    */ memory_arbitration_isValid,
     /* [16]    */ writeBack_arbitration_isValid,
     /* [15:0]  */ IBusCachedPlugin_fetchPc_pc[15:0]
-
   };
   assign execute_BranchPlugin_eq = (execute_SRC1 == execute_SRC2);
   assign switch_Misc_l245_1 = execute_INSTRUCTION[14 : 12];
@@ -10478,8 +10477,8 @@ module AlvxApb (
   wire                video_errTglD;
   reg                 video_errTglQ;
   reg                 video_enQ;
-  wire                when_AlvxApb_l235;
-  wire                when_AlvxApb_l238;
+  wire                when_AlvxApb_l241;
+  wire                when_AlvxApb_l244;
   wire       [11:0]   video_regs_apb_PADDR;
   wire       [0:0]    video_regs_apb_PSEL;
   wire                video_regs_apb_PENABLE;
@@ -11003,10 +11002,10 @@ module AlvxApb (
   assign video_pixArea_enPix = video_enable_buffercc_io_dataOut;
   assign video_pixArea_ctrl_io_softReset = (! video_pixArea_enPix);
   assign video_pixArea_rgbFrag_last = video_dma_io_frame_payload_last;
-  assign _zz_video_pixArea_rgbFrag_fragment_r = video_dma_io_frame_payload_fragment[23 : 0];
-  assign video_pixArea_rgbFrag_fragment_r = _zz_video_pixArea_rgbFrag_fragment_r[23 : 16];
+  assign _zz_video_pixArea_rgbFrag_fragment_r = {{video_dma_io_frame_payload_fragment[7 : 0],video_dma_io_frame_payload_fragment[15 : 8]},video_dma_io_frame_payload_fragment[23 : 16]};
+  assign video_pixArea_rgbFrag_fragment_r = _zz_video_pixArea_rgbFrag_fragment_r[7 : 0];
   assign video_pixArea_rgbFrag_fragment_g = _zz_video_pixArea_rgbFrag_fragment_r[15 : 8];
-  assign video_pixArea_rgbFrag_fragment_b = _zz_video_pixArea_rgbFrag_fragment_r[7 : 0];
+  assign video_pixArea_rgbFrag_fragment_b = _zz_video_pixArea_rgbFrag_fragment_r[23 : 16];
   assign video_dma_io_frame_translated_valid = video_dma_io_frame_valid;
   assign video_dma_io_frame_translated_payload_last = video_pixArea_rgbFrag_last;
   assign video_dma_io_frame_translated_payload_fragment_r = video_pixArea_rgbFrag_fragment_r;
@@ -11035,8 +11034,8 @@ module AlvxApb (
   assign io_tmds2 = video_pixArea_encR_io_TMDS;
   assign video_frameTglD = video_pixArea_frameTgl_buffercc_io_dataOut;
   assign video_errTglD = video_pixArea_errTgl_buffercc_io_dataOut;
-  assign when_AlvxApb_l235 = ((video_enable && (! video_enQ)) || ((video_enable && (! video_dma_io_busy)) && (video_frameTglD != video_frameTglQ)));
-  assign when_AlvxApb_l238 = (video_errTglD != video_errTglQ);
+  assign when_AlvxApb_l241 = ((video_enable && (! video_enQ)) || ((video_enable && (! video_dma_io_busy)) && (video_frameTglD != video_frameTglQ)));
+  assign when_AlvxApb_l244 = (video_errTglD != video_errTglQ);
   assign io_vid_status = {{{1'b0,video_dma_io_busy},video_underRun},video_enable};
   assign video_regs_factory_readErrorFlag = 1'b0;
   assign video_regs_factory_writeErrorFlag = 1'b0;
@@ -11102,10 +11101,10 @@ module AlvxApb (
       end
       video_startReq <= 1'b0;
       video_rspBeat_value <= video_rspBeat_valueNext;
-      if(when_AlvxApb_l235) begin
+      if(when_AlvxApb_l241) begin
         video_startReq <= 1'b1;
       end
-      if(when_AlvxApb_l238) begin
+      if(when_AlvxApb_l244) begin
         video_underRun <= 1'b1;
       end
       video_base <= video_base_driver;
@@ -14638,31 +14637,31 @@ module VideoDma (
   wire                rspArea_fifo_io_pop_valid;
   wire                rspArea_fifo_io_pop_payload_last;
   wire       [31:0]   rspArea_fifo_io_pop_payload_fragment;
-  wire       [11:0]   rspArea_fifo_io_pushOccupancy;
-  wire       [11:0]   rspArea_fifo_io_popOccupancy;
-  wire       [8:0]    rspArea_frameClockArea_popCmdGray_buffercc_io_dataOut;
+  wire       [13:0]   rspArea_fifo_io_pushOccupancy;
+  wire       [13:0]   rspArea_fifo_io_popOccupancy;
+  wire       [10:0]   rspArea_frameClockArea_popCmdGray_buffercc_io_dataOut;
   wire       [24:0]   _zz_io_mem_cmd_payload;
   wire       [2:0]    _zz_rspArea_frameClockArea_popBeatCounter_valueNext;
   wire       [0:0]    _zz_rspArea_frameClockArea_popBeatCounter_valueNext_1;
-  reg        [6:0]    _zz_pendingMemRsp;
-  reg        [6:0]    _zz_pendingMemRsp_1;
+  reg        [7:0]    _zz_pendingMemRsp;
+  reg        [7:0]    _zz_pendingMemRsp_1;
   wire                io_mem_cmd_fire;
   wire                when_Utils_l735;
   reg                 pendingMemCmd_incrementIt;
   reg                 pendingMemCmd_decrementIt;
-  wire       [3:0]    pendingMemCmd_valueNext;
-  reg        [3:0]    pendingMemCmd_value;
+  wire       [4:0]    pendingMemCmd_valueNext;
+  reg        [4:0]    pendingMemCmd_value;
   wire                pendingMemCmd_mayOverflow;
   wire                pendingMemCmd_mayUnderflow;
   wire                pendingMemCmd_willOverflowIfInc;
   wire                pendingMemCmd_willOverflow;
   wire                pendingMemCmd_willUnderflowIfDec;
   wire                pendingMemCmd_willUnderflow;
-  reg        [3:0]    pendingMemCmd_finalIncrement;
+  reg        [4:0]    pendingMemCmd_finalIncrement;
   wire                when_Utils_l767;
   wire                when_Utils_l769;
-  reg        [6:0]    pendingMemRsp;
-  wire       [6:0]    _zz_pendingMemRsp_2;
+  reg        [7:0]    pendingMemRsp;
+  wire       [7:0]    _zz_pendingMemRsp_2;
   wire                toManyPendingCmd;
   wire                toManyPendingRsp;
   reg                 isActive;
@@ -14691,9 +14690,9 @@ module VideoDma (
   wire                rspArea_frameClockArea_popBeatCounter_willOverflowIfInc;
   wire                rspArea_frameClockArea_popBeatCounter_willOverflow;
   wire                rspArea_fifo_io_pop_fire;
-  reg        [8:0]    rspArea_frameClockArea_popCmdGray;
+  reg        [10:0]   rspArea_frameClockArea_popCmdGray;
   reg                 _zz_when_Utils_l452;
-  wire       [8:0]    _zz_when_Utils_l452_1;
+  wire       [10:0]   _zz_when_Utils_l452_1;
   reg                 _zz_when_Utils_l452_2;
   reg                 _zz_when_Utils_l452_3;
   reg                 _zz_when_Utils_l452_4;
@@ -14702,6 +14701,8 @@ module VideoDma (
   reg                 _zz_when_Utils_l452_7;
   reg                 _zz_when_Utils_l452_8;
   reg                 _zz_when_Utils_l452_9;
+  reg                 _zz_when_Utils_l452_10;
+  reg                 _zz_when_Utils_l452_11;
   wire                when_Utils_l452;
   wire                when_Utils_l452_1;
   wire                when_Utils_l452_2;
@@ -14711,20 +14712,22 @@ module VideoDma (
   wire                when_Utils_l452_6;
   wire                when_Utils_l452_7;
   wire                when_Utils_l452_8;
-  wire       [8:0]    rspArea_popCmdGray;
-  reg        [8:0]    rspArea_pushCmdGray;
-  reg                 _zz_when_Utils_l452_10;
-  wire       [8:0]    _zz_when_Utils_l452_11;
+  wire                when_Utils_l452_9;
+  wire                when_Utils_l452_10;
+  wire       [10:0]   rspArea_popCmdGray;
+  reg        [10:0]   rspArea_pushCmdGray;
   reg                 _zz_when_Utils_l452_12;
-  reg                 _zz_when_Utils_l452_13;
+  wire       [10:0]   _zz_when_Utils_l452_13;
   reg                 _zz_when_Utils_l452_14;
   reg                 _zz_when_Utils_l452_15;
   reg                 _zz_when_Utils_l452_16;
   reg                 _zz_when_Utils_l452_17;
   reg                 _zz_when_Utils_l452_18;
   reg                 _zz_when_Utils_l452_19;
-  wire                when_Utils_l452_9;
-  wire                when_Utils_l452_10;
+  reg                 _zz_when_Utils_l452_20;
+  reg                 _zz_when_Utils_l452_21;
+  reg                 _zz_when_Utils_l452_22;
+  reg                 _zz_when_Utils_l452_23;
   wire                when_Utils_l452_11;
   wire                when_Utils_l452_12;
   wire                when_Utils_l452_13;
@@ -14732,6 +14735,10 @@ module VideoDma (
   wire                when_Utils_l452_15;
   wire                when_Utils_l452_16;
   wire                when_Utils_l452_17;
+  wire                when_Utils_l452_18;
+  wire                when_Utils_l452_19;
+  wire                when_Utils_l452_20;
+  wire                when_Utils_l452_21;
   wire       [32:0]   _zz_io_frame_payload_last;
 
   assign _zz_io_mem_cmd_payload = {7'd0, memCmdCounter};
@@ -14746,29 +14753,29 @@ module VideoDma (
     .io_pop_ready             (fifoPop_ready                             ), //i
     .io_pop_payload_last      (rspArea_fifo_io_pop_payload_last          ), //o
     .io_pop_payload_fragment  (rspArea_fifo_io_pop_payload_fragment[31:0]), //o
-    .io_pushOccupancy         (rspArea_fifo_io_pushOccupancy[11:0]       ), //o
-    .io_popOccupancy          (rspArea_fifo_io_popOccupancy[11:0]        ), //o
+    .io_pushOccupancy         (rspArea_fifo_io_pushOccupancy[13:0]       ), //o
+    .io_popOccupancy          (rspArea_fifo_io_popOccupancy[13:0]        ), //o
     .clk                      (clk                                       ), //i
     .reset                    (reset                                     ), //i
     .io_pix_clk               (io_pix_clk                                )  //i
   );
   (* keep_hierarchy = "TRUE" *) BufferCC_8 rspArea_frameClockArea_popCmdGray_buffercc (
-    .io_dataIn  (rspArea_frameClockArea_popCmdGray[8:0]                    ), //i
-    .io_dataOut (rspArea_frameClockArea_popCmdGray_buffercc_io_dataOut[8:0]), //o
-    .clk        (clk                                                       ), //i
-    .reset      (reset                                                     )  //i
+    .io_dataIn  (rspArea_frameClockArea_popCmdGray[10:0]                    ), //i
+    .io_dataOut (rspArea_frameClockArea_popCmdGray_buffercc_io_dataOut[10:0]), //o
+    .clk        (clk                                                        ), //i
+    .reset      (reset                                                      )  //i
   );
   always @(*) begin
     _zz_pendingMemRsp = _zz_pendingMemRsp_1;
     if(io_mem_rsp_valid) begin
-      _zz_pendingMemRsp = (_zz_pendingMemRsp_1 - 7'h01);
+      _zz_pendingMemRsp = (_zz_pendingMemRsp_1 - 8'h01);
     end
   end
 
   always @(*) begin
     _zz_pendingMemRsp_1 = _zz_pendingMemRsp_2;
     if(io_mem_cmd_fire) begin
-      _zz_pendingMemRsp_1 = (_zz_pendingMemRsp_2 + 7'h08);
+      _zz_pendingMemRsp_1 = (_zz_pendingMemRsp_2 + 8'h08);
     end
   end
 
@@ -14788,8 +14795,8 @@ module VideoDma (
     end
   end
 
-  assign pendingMemCmd_mayOverflow = (pendingMemCmd_value == 4'b1111);
-  assign pendingMemCmd_mayUnderflow = (pendingMemCmd_value == 4'b0000);
+  assign pendingMemCmd_mayOverflow = (pendingMemCmd_value == 5'h1f);
+  assign pendingMemCmd_mayUnderflow = (pendingMemCmd_value == 5'h0);
   assign pendingMemCmd_willOverflowIfInc = (pendingMemCmd_mayOverflow && (! pendingMemCmd_decrementIt));
   assign pendingMemCmd_willOverflow = (pendingMemCmd_willOverflowIfInc && pendingMemCmd_incrementIt);
   assign pendingMemCmd_willUnderflowIfDec = (pendingMemCmd_mayUnderflow && (! pendingMemCmd_incrementIt));
@@ -14797,12 +14804,12 @@ module VideoDma (
   assign when_Utils_l767 = (pendingMemCmd_incrementIt && (! pendingMemCmd_decrementIt));
   always @(*) begin
     if(when_Utils_l767) begin
-      pendingMemCmd_finalIncrement = 4'b0001;
+      pendingMemCmd_finalIncrement = 5'h01;
     end else begin
       if(when_Utils_l769) begin
-        pendingMemCmd_finalIncrement = 4'b1111;
+        pendingMemCmd_finalIncrement = 5'h1f;
       end else begin
-        pendingMemCmd_finalIncrement = 4'b0000;
+        pendingMemCmd_finalIncrement = 5'h0;
       end
     end
   end
@@ -14810,7 +14817,7 @@ module VideoDma (
   assign when_Utils_l769 = ((! pendingMemCmd_incrementIt) && pendingMemCmd_decrementIt);
   assign pendingMemCmd_valueNext = (pendingMemCmd_value + pendingMemCmd_finalIncrement);
   assign _zz_pendingMemRsp_2 = pendingMemRsp;
-  assign toManyPendingCmd = (4'b1110 < pendingMemCmd_value);
+  assign toManyPendingCmd = (5'h1e < pendingMemCmd_value);
   assign io_busy = isActive;
   assign memCmdLast = (memCmdCounter == io_size);
   always @(*) begin
@@ -14828,9 +14835,9 @@ module VideoDma (
   assign when_VideoDma_l94 = (! isActive);
   assign when_VideoDma_l102 = ((! toManyPendingCmd) && (! toManyPendingRsp));
   assign when_VideoDma_l104 = (memCmdLast && io_mem_cmd_ready);
-  assign when_VideoDma_l108 = (pendingMemRsp == 7'h0);
+  assign when_VideoDma_l108 = (pendingMemRsp == 8'h0);
   assign memRsp_valid = io_mem_rsp_valid;
-  assign memRsp_payload_last = ((! cmdActive) && (pendingMemRsp == 7'h01));
+  assign memRsp_payload_last = ((! cmdActive) && (pendingMemRsp == 8'h01));
   assign memRsp_payload_fragment = io_mem_rsp_payload_fragment;
   assign memRsp_toStream_valid = memRsp_valid;
   assign memRsp_toStream_payload_last = memRsp_payload_last;
@@ -14857,140 +14864,172 @@ module VideoDma (
   end
 
   assign rspArea_fifo_io_pop_fire = (rspArea_fifo_io_pop_valid && fifoPop_ready);
-  assign _zz_when_Utils_l452_1 = {1'b1,{rspArea_frameClockArea_popCmdGray[6 : 0],_zz_when_Utils_l452}};
+  assign _zz_when_Utils_l452_1 = {1'b1,{rspArea_frameClockArea_popCmdGray[8 : 0],_zz_when_Utils_l452}};
   always @(*) begin
     _zz_when_Utils_l452_2 = _zz_when_Utils_l452_3;
-    if(when_Utils_l452_7) begin
+    if(when_Utils_l452_9) begin
       _zz_when_Utils_l452_2 = 1'b1;
     end
   end
 
   always @(*) begin
     _zz_when_Utils_l452_3 = _zz_when_Utils_l452_4;
-    if(when_Utils_l452_6) begin
+    if(when_Utils_l452_8) begin
       _zz_when_Utils_l452_3 = 1'b1;
     end
   end
 
   always @(*) begin
     _zz_when_Utils_l452_4 = _zz_when_Utils_l452_5;
-    if(when_Utils_l452_5) begin
+    if(when_Utils_l452_7) begin
       _zz_when_Utils_l452_4 = 1'b1;
     end
   end
 
   always @(*) begin
     _zz_when_Utils_l452_5 = _zz_when_Utils_l452_6;
-    if(when_Utils_l452_4) begin
+    if(when_Utils_l452_6) begin
       _zz_when_Utils_l452_5 = 1'b1;
     end
   end
 
   always @(*) begin
     _zz_when_Utils_l452_6 = _zz_when_Utils_l452_7;
-    if(when_Utils_l452_3) begin
+    if(when_Utils_l452_5) begin
       _zz_when_Utils_l452_6 = 1'b1;
     end
   end
 
   always @(*) begin
     _zz_when_Utils_l452_7 = _zz_when_Utils_l452_8;
-    if(when_Utils_l452_2) begin
+    if(when_Utils_l452_4) begin
       _zz_when_Utils_l452_7 = 1'b1;
     end
   end
 
   always @(*) begin
     _zz_when_Utils_l452_8 = _zz_when_Utils_l452_9;
-    if(when_Utils_l452_1) begin
+    if(when_Utils_l452_3) begin
       _zz_when_Utils_l452_8 = 1'b1;
     end
   end
 
   always @(*) begin
-    _zz_when_Utils_l452_9 = 1'b0;
-    if(when_Utils_l452) begin
+    _zz_when_Utils_l452_9 = _zz_when_Utils_l452_10;
+    if(when_Utils_l452_2) begin
       _zz_when_Utils_l452_9 = 1'b1;
     end
   end
 
+  always @(*) begin
+    _zz_when_Utils_l452_10 = _zz_when_Utils_l452_11;
+    if(when_Utils_l452_1) begin
+      _zz_when_Utils_l452_10 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_11 = 1'b0;
+    if(when_Utils_l452) begin
+      _zz_when_Utils_l452_11 = 1'b1;
+    end
+  end
+
   assign when_Utils_l452 = (_zz_when_Utils_l452_1[0] && (! 1'b0));
-  assign when_Utils_l452_1 = (_zz_when_Utils_l452_1[1] && (! _zz_when_Utils_l452_9));
-  assign when_Utils_l452_2 = (_zz_when_Utils_l452_1[2] && (! _zz_when_Utils_l452_8));
-  assign when_Utils_l452_3 = (_zz_when_Utils_l452_1[3] && (! _zz_when_Utils_l452_7));
-  assign when_Utils_l452_4 = (_zz_when_Utils_l452_1[4] && (! _zz_when_Utils_l452_6));
-  assign when_Utils_l452_5 = (_zz_when_Utils_l452_1[5] && (! _zz_when_Utils_l452_5));
-  assign when_Utils_l452_6 = (_zz_when_Utils_l452_1[6] && (! _zz_when_Utils_l452_4));
-  assign when_Utils_l452_7 = (_zz_when_Utils_l452_1[7] && (! _zz_when_Utils_l452_3));
-  assign when_Utils_l452_8 = (_zz_when_Utils_l452_1[8] && (! _zz_when_Utils_l452_2));
+  assign when_Utils_l452_1 = (_zz_when_Utils_l452_1[1] && (! _zz_when_Utils_l452_11));
+  assign when_Utils_l452_2 = (_zz_when_Utils_l452_1[2] && (! _zz_when_Utils_l452_10));
+  assign when_Utils_l452_3 = (_zz_when_Utils_l452_1[3] && (! _zz_when_Utils_l452_9));
+  assign when_Utils_l452_4 = (_zz_when_Utils_l452_1[4] && (! _zz_when_Utils_l452_8));
+  assign when_Utils_l452_5 = (_zz_when_Utils_l452_1[5] && (! _zz_when_Utils_l452_7));
+  assign when_Utils_l452_6 = (_zz_when_Utils_l452_1[6] && (! _zz_when_Utils_l452_6));
+  assign when_Utils_l452_7 = (_zz_when_Utils_l452_1[7] && (! _zz_when_Utils_l452_5));
+  assign when_Utils_l452_8 = (_zz_when_Utils_l452_1[8] && (! _zz_when_Utils_l452_4));
+  assign when_Utils_l452_9 = (_zz_when_Utils_l452_1[9] && (! _zz_when_Utils_l452_3));
+  assign when_Utils_l452_10 = (_zz_when_Utils_l452_1[10] && (! _zz_when_Utils_l452_2));
   assign rspArea_popCmdGray = rspArea_frameClockArea_popCmdGray_buffercc_io_dataOut;
-  assign _zz_when_Utils_l452_11 = {1'b1,{rspArea_pushCmdGray[6 : 0],_zz_when_Utils_l452_10}};
-  always @(*) begin
-    _zz_when_Utils_l452_12 = _zz_when_Utils_l452_13;
-    if(when_Utils_l452_16) begin
-      _zz_when_Utils_l452_12 = 1'b1;
-    end
-  end
-
-  always @(*) begin
-    _zz_when_Utils_l452_13 = _zz_when_Utils_l452_14;
-    if(when_Utils_l452_15) begin
-      _zz_when_Utils_l452_13 = 1'b1;
-    end
-  end
-
+  assign _zz_when_Utils_l452_13 = {1'b1,{rspArea_pushCmdGray[8 : 0],_zz_when_Utils_l452_12}};
   always @(*) begin
     _zz_when_Utils_l452_14 = _zz_when_Utils_l452_15;
-    if(when_Utils_l452_14) begin
+    if(when_Utils_l452_20) begin
       _zz_when_Utils_l452_14 = 1'b1;
     end
   end
 
   always @(*) begin
     _zz_when_Utils_l452_15 = _zz_when_Utils_l452_16;
-    if(when_Utils_l452_13) begin
+    if(when_Utils_l452_19) begin
       _zz_when_Utils_l452_15 = 1'b1;
     end
   end
 
   always @(*) begin
     _zz_when_Utils_l452_16 = _zz_when_Utils_l452_17;
-    if(when_Utils_l452_12) begin
+    if(when_Utils_l452_18) begin
       _zz_when_Utils_l452_16 = 1'b1;
     end
   end
 
   always @(*) begin
     _zz_when_Utils_l452_17 = _zz_when_Utils_l452_18;
-    if(when_Utils_l452_11) begin
+    if(when_Utils_l452_17) begin
       _zz_when_Utils_l452_17 = 1'b1;
     end
   end
 
   always @(*) begin
     _zz_when_Utils_l452_18 = _zz_when_Utils_l452_19;
-    if(when_Utils_l452_10) begin
+    if(when_Utils_l452_16) begin
       _zz_when_Utils_l452_18 = 1'b1;
     end
   end
 
   always @(*) begin
-    _zz_when_Utils_l452_19 = 1'b0;
-    if(when_Utils_l452_9) begin
+    _zz_when_Utils_l452_19 = _zz_when_Utils_l452_20;
+    if(when_Utils_l452_15) begin
       _zz_when_Utils_l452_19 = 1'b1;
     end
   end
 
-  assign when_Utils_l452_9 = (_zz_when_Utils_l452_11[0] && (! 1'b0));
-  assign when_Utils_l452_10 = (_zz_when_Utils_l452_11[1] && (! _zz_when_Utils_l452_19));
-  assign when_Utils_l452_11 = (_zz_when_Utils_l452_11[2] && (! _zz_when_Utils_l452_18));
-  assign when_Utils_l452_12 = (_zz_when_Utils_l452_11[3] && (! _zz_when_Utils_l452_17));
-  assign when_Utils_l452_13 = (_zz_when_Utils_l452_11[4] && (! _zz_when_Utils_l452_16));
-  assign when_Utils_l452_14 = (_zz_when_Utils_l452_11[5] && (! _zz_when_Utils_l452_15));
-  assign when_Utils_l452_15 = (_zz_when_Utils_l452_11[6] && (! _zz_when_Utils_l452_14));
-  assign when_Utils_l452_16 = (_zz_when_Utils_l452_11[7] && (! _zz_when_Utils_l452_13));
-  assign when_Utils_l452_17 = (_zz_when_Utils_l452_11[8] && (! _zz_when_Utils_l452_12));
-  assign toManyPendingRsp = ((rspArea_pushCmdGray[8 : 7] == (~ rspArea_popCmdGray[8 : 7])) && (rspArea_pushCmdGray[6 : 0] == rspArea_popCmdGray[6 : 0]));
+  always @(*) begin
+    _zz_when_Utils_l452_20 = _zz_when_Utils_l452_21;
+    if(when_Utils_l452_14) begin
+      _zz_when_Utils_l452_20 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_21 = _zz_when_Utils_l452_22;
+    if(when_Utils_l452_13) begin
+      _zz_when_Utils_l452_21 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_22 = _zz_when_Utils_l452_23;
+    if(when_Utils_l452_12) begin
+      _zz_when_Utils_l452_22 = 1'b1;
+    end
+  end
+
+  always @(*) begin
+    _zz_when_Utils_l452_23 = 1'b0;
+    if(when_Utils_l452_11) begin
+      _zz_when_Utils_l452_23 = 1'b1;
+    end
+  end
+
+  assign when_Utils_l452_11 = (_zz_when_Utils_l452_13[0] && (! 1'b0));
+  assign when_Utils_l452_12 = (_zz_when_Utils_l452_13[1] && (! _zz_when_Utils_l452_23));
+  assign when_Utils_l452_13 = (_zz_when_Utils_l452_13[2] && (! _zz_when_Utils_l452_22));
+  assign when_Utils_l452_14 = (_zz_when_Utils_l452_13[3] && (! _zz_when_Utils_l452_21));
+  assign when_Utils_l452_15 = (_zz_when_Utils_l452_13[4] && (! _zz_when_Utils_l452_20));
+  assign when_Utils_l452_16 = (_zz_when_Utils_l452_13[5] && (! _zz_when_Utils_l452_19));
+  assign when_Utils_l452_17 = (_zz_when_Utils_l452_13[6] && (! _zz_when_Utils_l452_18));
+  assign when_Utils_l452_18 = (_zz_when_Utils_l452_13[7] && (! _zz_when_Utils_l452_17));
+  assign when_Utils_l452_19 = (_zz_when_Utils_l452_13[8] && (! _zz_when_Utils_l452_16));
+  assign when_Utils_l452_20 = (_zz_when_Utils_l452_13[9] && (! _zz_when_Utils_l452_15));
+  assign when_Utils_l452_21 = (_zz_when_Utils_l452_13[10] && (! _zz_when_Utils_l452_14));
+  assign toManyPendingRsp = ((rspArea_pushCmdGray[10 : 9] == (~ rspArea_popCmdGray[10 : 9])) && (rspArea_pushCmdGray[8 : 0] == rspArea_popCmdGray[8 : 0]));
   assign io_frame_valid = fifoPop_valid;
   assign fifoPop_ready = io_frame_ready;
   assign _zz_io_frame_payload_last = {fifoPop_payload_fragment,fifoPop_payload_last};
@@ -14998,12 +15037,12 @@ module VideoDma (
   assign io_frame_payload_fragment = _zz_io_frame_payload_last[32 : 1];
   always @(posedge clk or posedge reset) begin
     if(reset) begin
-      pendingMemCmd_value <= 4'b0000;
-      pendingMemRsp <= 7'h0;
+      pendingMemCmd_value <= 5'h0;
+      pendingMemRsp <= 8'h0;
       isActive <= 1'b0;
       cmdActive <= 1'b0;
-      rspArea_pushCmdGray <= 9'h0;
-      _zz_when_Utils_l452_10 <= 1'b1;
+      rspArea_pushCmdGray <= 11'h0;
+      _zz_when_Utils_l452_12 <= 1'b1;
     end else begin
       pendingMemCmd_value <= pendingMemCmd_valueNext;
       pendingMemRsp <= _zz_pendingMemRsp;
@@ -15026,34 +15065,40 @@ module VideoDma (
         end
       end
       if(io_mem_cmd_fire) begin
-        if(when_Utils_l452_9) begin
+        if(when_Utils_l452_11) begin
           rspArea_pushCmdGray[0] <= (! rspArea_pushCmdGray[0]);
         end
-        if(when_Utils_l452_10) begin
+        if(when_Utils_l452_12) begin
           rspArea_pushCmdGray[1] <= (! rspArea_pushCmdGray[1]);
         end
-        if(when_Utils_l452_11) begin
+        if(when_Utils_l452_13) begin
           rspArea_pushCmdGray[2] <= (! rspArea_pushCmdGray[2]);
         end
-        if(when_Utils_l452_12) begin
+        if(when_Utils_l452_14) begin
           rspArea_pushCmdGray[3] <= (! rspArea_pushCmdGray[3]);
         end
-        if(when_Utils_l452_13) begin
+        if(when_Utils_l452_15) begin
           rspArea_pushCmdGray[4] <= (! rspArea_pushCmdGray[4]);
         end
-        if(when_Utils_l452_14) begin
+        if(when_Utils_l452_16) begin
           rspArea_pushCmdGray[5] <= (! rspArea_pushCmdGray[5]);
         end
-        if(when_Utils_l452_15) begin
+        if(when_Utils_l452_17) begin
           rspArea_pushCmdGray[6] <= (! rspArea_pushCmdGray[6]);
         end
-        if(when_Utils_l452_16) begin
+        if(when_Utils_l452_18) begin
           rspArea_pushCmdGray[7] <= (! rspArea_pushCmdGray[7]);
         end
-        if(when_Utils_l452_17) begin
+        if(when_Utils_l452_19) begin
           rspArea_pushCmdGray[8] <= (! rspArea_pushCmdGray[8]);
         end
-        _zz_when_Utils_l452_10 <= (! _zz_when_Utils_l452_10);
+        if(when_Utils_l452_20) begin
+          rspArea_pushCmdGray[9] <= (! rspArea_pushCmdGray[9]);
+        end
+        if(when_Utils_l452_21) begin
+          rspArea_pushCmdGray[10] <= (! rspArea_pushCmdGray[10]);
+        end
+        _zz_when_Utils_l452_12 <= (! _zz_when_Utils_l452_12);
       end
     end
   end
@@ -15072,7 +15117,7 @@ module VideoDma (
   always @(posedge io_pix_clk or posedge io_pix_reset) begin
     if(io_pix_reset) begin
       rspArea_frameClockArea_popBeatCounter_value <= 3'b000;
-      rspArea_frameClockArea_popCmdGray <= 9'h0;
+      rspArea_frameClockArea_popCmdGray <= 11'h0;
       _zz_when_Utils_l452 <= 1'b1;
     end else begin
       rspArea_frameClockArea_popBeatCounter_value <= rspArea_frameClockArea_popBeatCounter_valueNext;
@@ -15103,6 +15148,12 @@ module VideoDma (
         end
         if(when_Utils_l452_8) begin
           rspArea_frameClockArea_popCmdGray[8] <= (! rspArea_frameClockArea_popCmdGray[8]);
+        end
+        if(when_Utils_l452_9) begin
+          rspArea_frameClockArea_popCmdGray[9] <= (! rspArea_frameClockArea_popCmdGray[9]);
+        end
+        if(when_Utils_l452_10) begin
+          rspArea_frameClockArea_popCmdGray[10] <= (! rspArea_frameClockArea_popCmdGray[10]);
         end
         _zz_when_Utils_l452 <= (! _zz_when_Utils_l452);
       end
@@ -16118,14 +16169,14 @@ module BufferCC_12 (
 endmodule
 
 module BufferCC_8 (
-  input  wire [8:0]    io_dataIn,
-  output wire [8:0]    io_dataOut,
+  input  wire [10:0]   io_dataIn,
+  output wire [10:0]   io_dataOut,
   input  wire          clk,
   input  wire          reset
 );
 
-  (* async_reg = "true" *) reg        [8:0]    buffers_0;
-  (* async_reg = "true" *) reg        [8:0]    buffers_1;
+  (* async_reg = "true" *) reg        [10:0]   buffers_0;
+  (* async_reg = "true" *) reg        [10:0]   buffers_1;
 
   assign io_dataOut = buffers_1;
   always @(posedge clk) begin
@@ -16145,33 +16196,33 @@ module StreamFifoCC (
   input  wire          io_pop_ready,
   output wire          io_pop_payload_last,
   output wire [31:0]   io_pop_payload_fragment,
-  output wire [11:0]   io_pushOccupancy,
-  output wire [11:0]   io_popOccupancy,
+  output wire [13:0]   io_pushOccupancy,
+  output wire [13:0]   io_popOccupancy,
   input  wire          clk,
   input  wire          reset,
   input  wire          io_pix_clk
 );
 
   reg        [32:0]   ram_spinal_port1;
-  wire       [11:0]   popToPushGray_buffercc_io_dataOut;
+  wire       [13:0]   popToPushGray_buffercc_io_dataOut;
   wire                reset_asyncAssertSyncDeassert_buffercc_io_dataOut;
-  wire       [11:0]   pushToPopGray_buffercc_io_dataOut;
-  wire       [11:0]   _zz_pushCC_pushPtrGray;
-  wire       [10:0]   _zz_ram_port;
+  wire       [13:0]   pushToPopGray_buffercc_io_dataOut;
+  wire       [13:0]   _zz_pushCC_pushPtrGray;
+  wire       [12:0]   _zz_ram_port;
   wire       [32:0]   _zz_ram_port_1;
-  wire       [0:0]    _zz_io_pushOccupancy_11;
-  wire       [1:0]    _zz_io_pushOccupancy_12;
-  wire       [11:0]   _zz_popCC_popPtrGray;
-  wire       [0:0]    _zz_io_popOccupancy_11;
-  wire       [1:0]    _zz_io_popOccupancy_12;
+  wire       [0:0]    _zz_io_pushOccupancy_13;
+  wire       [3:0]    _zz_io_pushOccupancy_14;
+  wire       [13:0]   _zz_popCC_popPtrGray;
+  wire       [0:0]    _zz_io_popOccupancy_13;
+  wire       [3:0]    _zz_io_popOccupancy_14;
   reg                 _zz_1;
-  wire       [11:0]   popToPushGray;
-  wire       [11:0]   pushToPopGray;
-  reg        [11:0]   pushCC_pushPtr;
-  wire       [11:0]   pushCC_pushPtrPlus;
+  wire       [13:0]   popToPushGray;
+  wire       [13:0]   pushToPopGray;
+  reg        [13:0]   pushCC_pushPtr;
+  wire       [13:0]   pushCC_pushPtrPlus;
   wire                io_push_fire;
-  (* altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [11:0]   pushCC_pushPtrGray;
-  wire       [11:0]   pushCC_popPtrGray;
+  (* altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [13:0]   pushCC_pushPtrGray;
+  wire       [13:0]   pushCC_popPtrGray;
   wire                pushCC_full;
   wire                _zz_io_pushOccupancy;
   wire                _zz_io_pushOccupancy_1;
@@ -16184,37 +16235,39 @@ module StreamFifoCC (
   wire                _zz_io_pushOccupancy_8;
   wire                _zz_io_pushOccupancy_9;
   wire                _zz_io_pushOccupancy_10;
+  wire                _zz_io_pushOccupancy_11;
+  wire                _zz_io_pushOccupancy_12;
   wire                reset_asyncAssertSyncDeassert;
   wire                reset_synchronized;
-  reg        [11:0]   popCC_popPtr;
-  (* keep , syn_keep *) wire       [11:0]   popCC_popPtrPlus /* synthesis syn_keep = 1 */ ;
-  wire       [11:0]   popCC_popPtrGray;
-  wire       [11:0]   popCC_pushPtrGray;
+  reg        [13:0]   popCC_popPtr;
+  (* keep , syn_keep *) wire       [13:0]   popCC_popPtrPlus /* synthesis syn_keep = 1 */ ;
+  wire       [13:0]   popCC_popPtrGray;
+  wire       [13:0]   popCC_pushPtrGray;
   wire                popCC_addressGen_valid;
   reg                 popCC_addressGen_ready;
-  wire       [10:0]   popCC_addressGen_payload;
+  wire       [12:0]   popCC_addressGen_payload;
   wire                popCC_empty;
   wire                popCC_addressGen_fire;
   wire                popCC_readArbitation_valid;
   wire                popCC_readArbitation_ready;
-  wire       [10:0]   popCC_readArbitation_payload;
+  wire       [12:0]   popCC_readArbitation_payload;
   reg                 popCC_addressGen_rValid;
-  reg        [10:0]   popCC_addressGen_rData;
+  reg        [12:0]   popCC_addressGen_rData;
   wire                when_Stream_l477;
   wire                popCC_readPort_cmd_valid;
-  wire       [10:0]   popCC_readPort_cmd_payload;
+  wire       [12:0]   popCC_readPort_cmd_payload;
   wire                popCC_readPort_rsp_last;
   wire       [31:0]   popCC_readPort_rsp_fragment;
   wire       [32:0]   _zz_popCC_readPort_rsp_last;
   wire                popCC_addressGen_toFlowFire_valid;
-  wire       [10:0]   popCC_addressGen_toFlowFire_payload;
+  wire       [12:0]   popCC_addressGen_toFlowFire_payload;
   wire                popCC_readArbitation_translated_valid;
   wire                popCC_readArbitation_translated_ready;
   wire                popCC_readArbitation_translated_payload_last;
   wire       [31:0]   popCC_readArbitation_translated_payload_fragment;
   wire                popCC_readArbitation_fire;
-  (* altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [11:0]   popCC_ptrToPush;
-  reg        [11:0]   popCC_ptrToOccupancy;
+  (* altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [13:0]   popCC_ptrToPush;
+  reg        [13:0]   popCC_ptrToOccupancy;
   wire                _zz_io_popOccupancy;
   wire                _zz_io_popOccupancy_1;
   wire                _zz_io_popOccupancy_2;
@@ -16226,16 +16279,18 @@ module StreamFifoCC (
   wire                _zz_io_popOccupancy_8;
   wire                _zz_io_popOccupancy_9;
   wire                _zz_io_popOccupancy_10;
-  reg [32:0] ram [0:2047];
+  wire                _zz_io_popOccupancy_11;
+  wire                _zz_io_popOccupancy_12;
+  reg [32:0] ram [0:8191];
 
   assign _zz_pushCC_pushPtrGray = (pushCC_pushPtrPlus >>> 1'b1);
-  assign _zz_ram_port = pushCC_pushPtr[10:0];
+  assign _zz_ram_port = pushCC_pushPtr[12:0];
   assign _zz_popCC_popPtrGray = (popCC_popPtr >>> 1'b1);
   assign _zz_ram_port_1 = {io_push_payload_fragment,io_push_payload_last};
-  assign _zz_io_pushOccupancy_11 = _zz_io_pushOccupancy_1;
-  assign _zz_io_pushOccupancy_12 = {_zz_io_pushOccupancy,(pushCC_popPtrGray[0] ^ _zz_io_pushOccupancy)};
-  assign _zz_io_popOccupancy_11 = _zz_io_popOccupancy_1;
-  assign _zz_io_popOccupancy_12 = {_zz_io_popOccupancy,(popCC_pushPtrGray[0] ^ _zz_io_popOccupancy)};
+  assign _zz_io_pushOccupancy_13 = _zz_io_pushOccupancy_3;
+  assign _zz_io_pushOccupancy_14 = {_zz_io_pushOccupancy_2,{_zz_io_pushOccupancy_1,{_zz_io_pushOccupancy,(pushCC_popPtrGray[0] ^ _zz_io_pushOccupancy)}}};
+  assign _zz_io_popOccupancy_13 = _zz_io_popOccupancy_3;
+  assign _zz_io_popOccupancy_14 = {_zz_io_popOccupancy_2,{_zz_io_popOccupancy_1,{_zz_io_popOccupancy,(popCC_pushPtrGray[0] ^ _zz_io_popOccupancy)}}};
   always @(posedge clk) begin
     if(_zz_1) begin
       ram[_zz_ram_port] <= _zz_ram_port_1;
@@ -16249,8 +16304,8 @@ module StreamFifoCC (
   end
 
   (* keep_hierarchy = "TRUE" *) BufferCC_5 popToPushGray_buffercc (
-    .io_dataIn  (popToPushGray[11:0]                    ), //i
-    .io_dataOut (popToPushGray_buffercc_io_dataOut[11:0]), //o
+    .io_dataIn  (popToPushGray[13:0]                    ), //i
+    .io_dataOut (popToPushGray_buffercc_io_dataOut[13:0]), //o
     .clk        (clk                                    ), //i
     .reset      (reset                                  )  //i
   );
@@ -16261,8 +16316,8 @@ module StreamFifoCC (
     .reset      (reset                                            )  //i
   );
   (* keep_hierarchy = "TRUE" *) BufferCC_7 pushToPopGray_buffercc (
-    .io_dataIn          (pushToPopGray[11:0]                    ), //i
-    .io_dataOut         (pushToPopGray_buffercc_io_dataOut[11:0]), //o
+    .io_dataIn          (pushToPopGray[13:0]                    ), //i
+    .io_dataOut         (pushToPopGray_buffercc_io_dataOut[13:0]), //o
     .io_pix_clk         (io_pix_clk                             ), //i
     .reset_synchronized (reset_synchronized                     )  //i
   );
@@ -16273,10 +16328,10 @@ module StreamFifoCC (
     end
   end
 
-  assign pushCC_pushPtrPlus = (pushCC_pushPtr + 12'h001);
+  assign pushCC_pushPtrPlus = (pushCC_pushPtr + 14'h0001);
   assign io_push_fire = (io_push_valid && io_push_ready);
   assign pushCC_popPtrGray = popToPushGray_buffercc_io_dataOut;
-  assign pushCC_full = ((pushCC_pushPtrGray[11 : 10] == (~ pushCC_popPtrGray[11 : 10])) && (pushCC_pushPtrGray[9 : 0] == pushCC_popPtrGray[9 : 0]));
+  assign pushCC_full = ((pushCC_pushPtrGray[13 : 12] == (~ pushCC_popPtrGray[13 : 12])) && (pushCC_pushPtrGray[11 : 0] == pushCC_popPtrGray[11 : 0]));
   assign io_push_ready = (! pushCC_full);
   assign _zz_io_pushOccupancy = (pushCC_popPtrGray[1] ^ _zz_io_pushOccupancy_1);
   assign _zz_io_pushOccupancy_1 = (pushCC_popPtrGray[2] ^ _zz_io_pushOccupancy_2);
@@ -16288,16 +16343,18 @@ module StreamFifoCC (
   assign _zz_io_pushOccupancy_7 = (pushCC_popPtrGray[8] ^ _zz_io_pushOccupancy_8);
   assign _zz_io_pushOccupancy_8 = (pushCC_popPtrGray[9] ^ _zz_io_pushOccupancy_9);
   assign _zz_io_pushOccupancy_9 = (pushCC_popPtrGray[10] ^ _zz_io_pushOccupancy_10);
-  assign _zz_io_pushOccupancy_10 = pushCC_popPtrGray[11];
-  assign io_pushOccupancy = (pushCC_pushPtr - {_zz_io_pushOccupancy_10,{_zz_io_pushOccupancy_9,{_zz_io_pushOccupancy_8,{_zz_io_pushOccupancy_7,{_zz_io_pushOccupancy_6,{_zz_io_pushOccupancy_5,{_zz_io_pushOccupancy_4,{_zz_io_pushOccupancy_3,{_zz_io_pushOccupancy_2,{_zz_io_pushOccupancy_11,_zz_io_pushOccupancy_12}}}}}}}}}});
+  assign _zz_io_pushOccupancy_10 = (pushCC_popPtrGray[11] ^ _zz_io_pushOccupancy_11);
+  assign _zz_io_pushOccupancy_11 = (pushCC_popPtrGray[12] ^ _zz_io_pushOccupancy_12);
+  assign _zz_io_pushOccupancy_12 = pushCC_popPtrGray[13];
+  assign io_pushOccupancy = (pushCC_pushPtr - {_zz_io_pushOccupancy_12,{_zz_io_pushOccupancy_11,{_zz_io_pushOccupancy_10,{_zz_io_pushOccupancy_9,{_zz_io_pushOccupancy_8,{_zz_io_pushOccupancy_7,{_zz_io_pushOccupancy_6,{_zz_io_pushOccupancy_5,{_zz_io_pushOccupancy_4,{_zz_io_pushOccupancy_13,_zz_io_pushOccupancy_14}}}}}}}}}});
   assign reset_asyncAssertSyncDeassert = (1'b0 ^ 1'b0);
   assign reset_synchronized = reset_asyncAssertSyncDeassert_buffercc_io_dataOut;
-  assign popCC_popPtrPlus = (popCC_popPtr + 12'h001);
+  assign popCC_popPtrPlus = (popCC_popPtr + 14'h0001);
   assign popCC_popPtrGray = (_zz_popCC_popPtrGray ^ popCC_popPtr);
   assign popCC_pushPtrGray = pushToPopGray_buffercc_io_dataOut;
   assign popCC_empty = (popCC_popPtrGray == popCC_pushPtrGray);
   assign popCC_addressGen_valid = (! popCC_empty);
-  assign popCC_addressGen_payload = popCC_popPtr[10:0];
+  assign popCC_addressGen_payload = popCC_popPtr[12:0];
   assign popCC_addressGen_fire = (popCC_addressGen_valid && popCC_addressGen_ready);
   always @(*) begin
     popCC_addressGen_ready = popCC_readArbitation_ready;
@@ -16335,14 +16392,16 @@ module StreamFifoCC (
   assign _zz_io_popOccupancy_7 = (popCC_pushPtrGray[8] ^ _zz_io_popOccupancy_8);
   assign _zz_io_popOccupancy_8 = (popCC_pushPtrGray[9] ^ _zz_io_popOccupancy_9);
   assign _zz_io_popOccupancy_9 = (popCC_pushPtrGray[10] ^ _zz_io_popOccupancy_10);
-  assign _zz_io_popOccupancy_10 = popCC_pushPtrGray[11];
-  assign io_popOccupancy = ({_zz_io_popOccupancy_10,{_zz_io_popOccupancy_9,{_zz_io_popOccupancy_8,{_zz_io_popOccupancy_7,{_zz_io_popOccupancy_6,{_zz_io_popOccupancy_5,{_zz_io_popOccupancy_4,{_zz_io_popOccupancy_3,{_zz_io_popOccupancy_2,{_zz_io_popOccupancy_11,_zz_io_popOccupancy_12}}}}}}}}}} - popCC_ptrToOccupancy);
+  assign _zz_io_popOccupancy_10 = (popCC_pushPtrGray[11] ^ _zz_io_popOccupancy_11);
+  assign _zz_io_popOccupancy_11 = (popCC_pushPtrGray[12] ^ _zz_io_popOccupancy_12);
+  assign _zz_io_popOccupancy_12 = popCC_pushPtrGray[13];
+  assign io_popOccupancy = ({_zz_io_popOccupancy_12,{_zz_io_popOccupancy_11,{_zz_io_popOccupancy_10,{_zz_io_popOccupancy_9,{_zz_io_popOccupancy_8,{_zz_io_popOccupancy_7,{_zz_io_popOccupancy_6,{_zz_io_popOccupancy_5,{_zz_io_popOccupancy_4,{_zz_io_popOccupancy_13,_zz_io_popOccupancy_14}}}}}}}}}} - popCC_ptrToOccupancy);
   assign pushToPopGray = pushCC_pushPtrGray;
   assign popToPushGray = popCC_ptrToPush;
   always @(posedge clk or posedge reset) begin
     if(reset) begin
-      pushCC_pushPtr <= 12'h0;
-      pushCC_pushPtrGray <= 12'h0;
+      pushCC_pushPtr <= 14'h0;
+      pushCC_pushPtrGray <= 14'h0;
     end else begin
       if(io_push_fire) begin
         pushCC_pushPtrGray <= (_zz_pushCC_pushPtrGray ^ pushCC_pushPtrPlus);
@@ -16355,10 +16414,10 @@ module StreamFifoCC (
 
   always @(posedge io_pix_clk or posedge reset_synchronized) begin
     if(reset_synchronized) begin
-      popCC_popPtr <= 12'h0;
+      popCC_popPtr <= 14'h0;
       popCC_addressGen_rValid <= 1'b0;
-      popCC_ptrToPush <= 12'h0;
-      popCC_ptrToOccupancy <= 12'h0;
+      popCC_ptrToPush <= 14'h0;
+      popCC_ptrToOccupancy <= 14'h0;
     end else begin
       if(popCC_addressGen_fire) begin
         popCC_popPtr <= popCC_popPtrPlus;
@@ -17339,20 +17398,20 @@ module BufferCC (
 endmodule
 
 module BufferCC_7 (
-  input  wire [11:0]   io_dataIn,
-  output wire [11:0]   io_dataOut,
+  input  wire [13:0]   io_dataIn,
+  output wire [13:0]   io_dataOut,
   input  wire          io_pix_clk,
   input  wire          reset_synchronized
 );
 
-  (* async_reg = "true" , altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [11:0]   buffers_0;
-  (* async_reg = "true" *) reg        [11:0]   buffers_1;
+  (* async_reg = "true" , altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [13:0]   buffers_0;
+  (* async_reg = "true" *) reg        [13:0]   buffers_1;
 
   assign io_dataOut = buffers_1;
   always @(posedge io_pix_clk or posedge reset_synchronized) begin
     if(reset_synchronized) begin
-      buffers_0 <= 12'h0;
-      buffers_1 <= 12'h0;
+      buffers_0 <= 14'h0;
+      buffers_1 <= 14'h0;
     end else begin
       buffers_0 <= io_dataIn;
       buffers_1 <= buffers_0;
@@ -17387,20 +17446,20 @@ module BufferCC_6 (
 endmodule
 
 module BufferCC_5 (
-  input  wire [11:0]   io_dataIn,
-  output wire [11:0]   io_dataOut,
+  input  wire [13:0]   io_dataIn,
+  output wire [13:0]   io_dataOut,
   input  wire          clk,
   input  wire          reset
 );
 
-  (* async_reg = "true" , altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [11:0]   buffers_0;
-  (* async_reg = "true" *) reg        [11:0]   buffers_1;
+  (* async_reg = "true" , altera_attribute = "-name ADV_NETLIST_OPT_ALLOWED NEVER_ALLOW" *) reg        [13:0]   buffers_0;
+  (* async_reg = "true" *) reg        [13:0]   buffers_1;
 
   assign io_dataOut = buffers_1;
   always @(posedge clk or posedge reset) begin
     if(reset) begin
-      buffers_0 <= 12'h0;
-      buffers_1 <= 12'h0;
+      buffers_0 <= 14'h0;
+      buffers_1 <= 14'h0;
     end else begin
       buffers_0 <= io_dataIn;
       buffers_1 <= buffers_0;
