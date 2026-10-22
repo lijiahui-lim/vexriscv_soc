@@ -126,7 +126,7 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
   w13={cpu_rst_req,fab_rst_n,afi_rst_n,pll,glb_rst_n}, w14=vid_status,
   w15/16=i/d pending-cmd {stuck_cnt,addr[19:0]}, w17/18=i/d pend addr,
   w19=execute_INSTRUCTION, w20={fetchPc[31:16],halt-reason bits},
-  w21={rx_pin_level<<16, rx_edges[15:0]}, w31=0xC0DE0005.
+  w31=0xC0DE0005.
   `open_service master $p` first; use the `phy_2` path only — `phy_1`
   reaches avlbr.s0 and every probe read adds DDR traffic.
 - jtagm/jtagm2 master_read_32 addresses are BYTE offsets into the target
