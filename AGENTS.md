@@ -56,6 +56,21 @@ VGA 640x480@59.5 negative sync; earlier 720p/75/375 MHz is in git history).
   (cmd fifo); `toManyPendingRsp` (gray-code push/pop counter) caps
   in-flight+buffered data at exactly `fifoSize` words — raising
   fifoSize is the ONLY way to deepen the video buffer.
+- Video bugs found+fixed (Oct 2026): `waitRequestn` polarity in
+  AlvxApb (`cmd.ready = read && waitRequestn`, NOT inverted — else
+  credit deadlock, black screen); avl_mux needs `RD_LOCK_N`-cmd
+  read-grant windows for the video slot or the speculative ddr bridge
+  starves the stream; R/B channel swap (`assignFromBits` puts r on
+  LSB — feed {b,g,r}); `serializer_10_to_1` needs a pipeline reg
+  before ddio_out (375 MHz shift_reg->IOE hop missed by ~0.22 ns).
+- HDMI screen capture for eyeballing: capture dongle on Windows
+  host li@192.168.2.209 (device "USB2 Video"), ssh key installed:
+  `ssh li@192.168.2.209 '"C:\Program Files\VideoLAN\VLC\vlc.exe" -I
+  dummy dshow:// --dshow-vdev="USB2 Video" --dshow-adev=none
+  --video-filter=scene --scene-format=png --scene-path=C:\Users\li\cap
+  --scene-ratio=30 --run-time=3 vlc://quit'` then scp the pngs.
+  JTAG fb tests: `fpga/fb_fill.tcl` / `fb_bars.tcl` / `fb_peek.tcl`
+  (phy_1 = DDR window; `master_write_memory path addr byte-list`).
 - dma.io.mem.rsp.last is generated in AlvxApb by a local beat counter
   (assumes every accepted 8-word burst returns exactly 8 contiguous
   beats); `memRsp.last` (frame end) is computed from pendingMemRsp==1.
