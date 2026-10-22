@@ -165,6 +165,8 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
   falls back to JTAG magic word @DDR+0x06000000 (`fpga/load_blob.tcl`
   uploads fw_payload.bin then writes magic). Jumps to 0x40000000 with
   a0=hartid(0), a1=0. Magic/scratch MUST sit above the ~38 MiB blob
+  footprint (they are at 0x46000000/0x46000100, below the fb carve
+  0x58000000); writing inside the blob corrupts the kernel image.
 - SD card layout (mksdimg.sh, single dd-able file):
   LBA0 MBR (p1 type 0x83 @LBA131072 = 64 MiB) | LBA1 boot header |
   LBA64 payload (~30 MB) | LBA131072 ext4 rootfs (1 GiB,
@@ -179,8 +181,6 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
   (/usr/include/sys/sdt.h present), libgcc configure false-positives
   HAVE_SYS_SDT_H — build with `gcc_cv_sys_sdt_h=no`. GNU make 4.4.1
   cross-compiled statically into /usr/bin/make.
-  footprint (they are at 0x46000000/0x46000100, below the fb carve
-  0x58000000); writing inside the blob corrupts the kernel image.
 - Hardware PLIC note: `plicInterrupts[i]` IS source ID i (io_sources =
   plicInterrupts>>1); bit0 must be 0 — soc.v packs {key=3,spi=2,uart=1}.
 - UART driver: `UPF_BOOT_AUTOCONF` makes serial core reset `port->type`
