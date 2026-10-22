@@ -125,6 +125,22 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
   screen pure black. test3/sim3 can't catch it (never checks pixels).
   Fixed: `cmd.ready := read && waitRequestn`. If video dies again, check
   `devmem 0xf100700c` bit1 after a W1C clear + look for real fb fetches.
+- **Video tearing/black-band recipe (fixed)**: after the polarity fix the
+  stream worked but the picture tore — underRun cleared at idle yet
+  re-armed under CPU load, and each frame restarted aligned then broke
+  mid-screen (the VgaCtrl glue re-aligns the stream to frameStart after
+  every error). Cause: `ddr_avl_bridge` is a single-stream speculative
+  prefetcher — every CPU<->video master switch is a drain+re-arm (~77%
+  miss rate), so the 8-word video bursts couldn't sustain 60 M words/s.
+  Fix: `avl_mux` `RD_LOCK_M=3'b100` grants the video slot `RD_LOCK_N`
+  consecutive read commands (64, ~512 sequential words/window — CPU just
+  waits, ~5 us worst). W1C `devmem 0xf100700c w 3` then reread: must
+  stay 0x1 under load (LVGL rendering + shell).
+- **R/B swap (fixed)**: `Rgb` declares r first and `assignFromBits` maps
+  the first field to the LSB, so feeding `fragment(23 downto 0)` landed
+  r on the fb's BLUE byte. Feed `{b,g,r}` byte order instead (AlvxApb
+  rgbFrag); verify colors with `fpga/fb_markers.tcl` (JTAG-writes known
+  pixels+line into DDR fb bypassing the CPU path entirely).
 - Avalon read burst = ONE accepted command, N readdatavalid beats; write
   burst = N accepted beats.
 - Programming only via Windows jtagserver (`li@192.168.2.209`):

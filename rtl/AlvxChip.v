@@ -11004,9 +11004,9 @@ module AlvxApb (
   assign video_pixArea_ctrl_io_softReset = (! video_pixArea_enPix);
   assign video_pixArea_rgbFrag_last = video_dma_io_frame_payload_last;
   assign _zz_video_pixArea_rgbFrag_fragment_r = video_dma_io_frame_payload_fragment[23 : 0];
-  assign video_pixArea_rgbFrag_fragment_r = _zz_video_pixArea_rgbFrag_fragment_r[7 : 0];
+  assign video_pixArea_rgbFrag_fragment_r = _zz_video_pixArea_rgbFrag_fragment_r[23 : 16];
   assign video_pixArea_rgbFrag_fragment_g = _zz_video_pixArea_rgbFrag_fragment_r[15 : 8];
-  assign video_pixArea_rgbFrag_fragment_b = _zz_video_pixArea_rgbFrag_fragment_r[23 : 16];
+  assign video_pixArea_rgbFrag_fragment_b = _zz_video_pixArea_rgbFrag_fragment_r[7 : 0];
   assign video_dma_io_frame_translated_valid = video_dma_io_frame_valid;
   assign video_dma_io_frame_translated_payload_last = video_pixArea_rgbFrag_last;
   assign video_dma_io_frame_translated_payload_fragment_r = video_pixArea_rgbFrag_fragment_r;

@@ -407,7 +407,7 @@ wire [95:0] dd_rdat;
 wire [5:0]  dd_rsp;
 
 avl_mux #(.N(3), .AW(32), .DW(32), .BW(8),
-          .RD_LOCK_M(3'b100), .RD_LOCK_N(8'd16)) u_ddr_mux (
+          .RD_LOCK_M(3'b100), .RD_LOCK_N(8'd64)) u_ddr_mux (
     .clk(clk), .reset_n(reset_n),
     .m_address    ({ {2'b00, vid_addr},
                      d_s_addr[DS_DDR*32 +: 32],

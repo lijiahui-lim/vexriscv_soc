@@ -200,10 +200,16 @@ case class AlvxApb() extends Component {
         hPixels = 1280, hSync = 110, hFront = 40, hBack = 220, hPolarity = true,
         vPixels = 720,  vSync = 5,   vFront = 5,  vBack = 20,  vPolarity = true
       )
-      // dma words are 32-bit x8r8g8b8 (rgb in low 24 bits); feed Rgb stream
+      // dma words are 32-bit x8r8g8b8 (rgb in low 24 bits); feed Rgb stream.
+      // Rgb declares r first and assignFromBits maps r to the LSB, so feed
+      // {b,g,r} byte order to land r=frag[23:16].
       val rgbFrag = Fragment(Rgb(rgbCfg))
       rgbFrag.last := dma.io.frame.last
-      rgbFrag.fragment.assignFromBits(dma.io.frame.fragment(23 downto 0))
+      rgbFrag.fragment.assignFromBits(
+        dma.io.frame.fragment(7 downto 0) ##
+        dma.io.frame.fragment(15 downto 8) ##
+        dma.io.frame.fragment(23 downto 16)
+      )
       ctrl.feedWith(dma.io.frame.translateWith(rgbFrag))
 
       val frameTgl = Reg(Bool) init(False)
