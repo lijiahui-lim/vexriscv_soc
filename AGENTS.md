@@ -191,6 +191,12 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
   rv32 tic via `qemu-riscv32 -L libs-stage`; flex uses the tarball's
   pregenerated scan.c as stage1scan.c (rv32 stage1flex crashes under
   qemu-user); libjpeg-turbo cmake needs -DCMAKE_INSTALL_LIBDIR=lib.
+- LVGL 9.2.2 ported via `/home/li/work/altera/rootfs/mklvgl.sh`
+  (lv_conf.h + main.c in rootfs/lvgl/): static lib+headers in
+  /usr/{lib,include}, demo at /usr/bin/lvgl_demo. Console stays the
+  screen owner; the demo saves fb mem + KD_GRAPHICS, restores +
+  KD_TEXT on exit (`lvgl_demo [secs]`, 0=until Ctrl-C). Needs
+  LV_FONT_MONTSERRAT_24 for lv_demo_benchmark.
 - Host-side rootfs test (no board, no root needed after one-time
   `apt install qemu-user-binfmt` which registers riscv32 binfmt with
   the F flag): `bwrap --bind rootfs/ / --dev /dev --proc /proc
