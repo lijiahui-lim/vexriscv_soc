@@ -256,6 +256,13 @@ ssh master@192.168.2.160 'cd ~/vex_soc &&
   rv32 tic via `qemu-riscv32 -L libs-stage`; flex uses the tarball's
   pregenerated scan.c as stage1scan.c (rv32 stage1flex crashes under
   qemu-user); libjpeg-turbo cmake needs -DCMAKE_INSTALL_LIBDIR=lib.
+- **rootfs merge hazard (bit us once)**: `cp -a` writes THROUGH
+  destination symlinks — busybox install creates applet links like
+  `usr/bin/clear -> ../../bin/busybox`; a plain `cp -a libs-stage/.`
+  then overwrote /bin/busybox with ncurses `clear` (9.5 KB), giving
+  "Usage: sh" -> "Attempted to kill init" panic at switch_root.
+  All rootfs merges now use `cp -a --remove-destination`, and
+  mksdimg.sh sanity-checks /bin/busybox size via debugfs.
 - LVGL 9.2.2 ported via `/home/li/work/altera/rootfs/mklvgl.sh`
   (lv_conf.h + main.c in rootfs/lvgl/): static lib+headers in
   /usr/{lib,include}, demo at /usr/bin/lvgl_demo. Console stays the

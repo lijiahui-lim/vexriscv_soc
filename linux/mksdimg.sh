@@ -45,6 +45,14 @@ cat "$PAY" >> "$IMG"
 echo "sdcard.img: payload $size bytes at LBA$PAY_LBA"
 
 if [ "$have_rfs" = 1 ]; then
+    # sanity: /bin/busybox inside the ext4 must be the real ~1.4 MB static
+    # binary — a staging-merge bug once replaced it with ncurses `clear`
+    # (cp -a writes THROUGH applet symlinks) -> PID1 "Usage: sh" panic.
+    bbsz=$(debugfs -R "stat /bin/busybox" "$RFS" 2>/dev/null | awk '/Size:/{print $NF; exit}')
+    if [ "${bbsz:-0}" -lt 100000 ]; then
+        echo "FATAL: /bin/busybox in $RFS is only ${bbsz:-?} bytes — rootfs merge bug!" >&2
+        exit 1
+    fi
     # append rootfs at LBA131072 (truncate img to that offset, then cat)
     python3 - "$IMG" $RFS_LBA <<'EOF'
 import sys
